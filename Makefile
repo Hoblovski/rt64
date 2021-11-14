@@ -1,17 +1,20 @@
-KERNPREFIX=src/kernel
-USERPREFIX=src/user
-ULIBPREFIX=src/ulib
-TOOLSPREFIX=src/tools
-INCLUDEPATH=src/include
+# KERNEL ================================
+KERNPREFIX = src/kernel
+USERPREFIX = src/user
+ULIBPREFIX = src/ulib
+TOOLSPREFIX = src/tools
+INCLUDEPATH = src/include
 
-OUTPREFIX=out
-KOBJPREFIX=$(OUTPREFIX)/kobj
-UOBJPREFIX=$(OUTPREFIX)/uobj
-FSPREFIX=fs
-IMGPREFIX=$(OUTPREFIX)
-FSIMG=$(IMGPREFIX)/fs.img
-MEMFSIMG=$(IMGPREFIX)/xv6memfs.img
-XV6IMG=$(IMGPREFIX)/xv6.img
+OUTPREFIX = out
+KOBJPREFIX = $(OUTPREFIX)/kobj
+UOBJPREFIX = $(OUTPREFIX)/uobj
+FSPREFIX = fs
+IMGPREFIX = $(OUTPREFIX)
+FSIMG = $(IMGPREFIX)/fs.img
+MEMFSIMG = $(IMGPREFIX)/xv6memfs.img
+XV6IMG = $(IMGPREFIX)/xv6.img
+
+KERNELELF = $(OUTPREFIX)/kernel.elf
 
 OBJS := \
 	$(KOBJPREFIX)/bio.o\
@@ -55,6 +58,7 @@ endif
 CC = gcc
 AS = gas
 LD = ld
+NM = nm
 OBJCOPY = objcopy
 OBJDUMP = objdump
 QEMU ?= qemu-system-x86_64
@@ -117,10 +121,10 @@ $(OUTPREFIX)/initcode: $(KERNPREFIX)/initcode64.S
 
 ENTRYCODE = $(KOBJPREFIX)/entry64.o
 LINKSCRIPT = $(KERNPREFIX)/kernel64.ld
-$(OUTPREFIX)/kernel.elf: $(OBJS) $(ENTRYCODE) $(OUTPREFIX)/entryother $(OUTPREFIX)/initcode $(LINKSCRIPT) $(FSIMAGE)
-	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o $(OUTPREFIX)/kernel.elf $(ENTRYCODE) $(OBJS) -b binary $(OUTPREFIX)/initcode $(OUTPREFIX)/entryother $(FSIMAGE)
-	$(OBJDUMP) -S $(OUTPREFIX)/kernel.elf > $(OUTPREFIX)/kernel.asm
-	$(OBJDUMP) -t $(OUTPREFIX)/kernel.elf | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(OUTPREFIX)/kernel.sym
+$(KERNELELF): $(OBJS) $(ENTRYCODE) $(OUTPREFIX)/entryother $(OUTPREFIX)/initcode $(LINKSCRIPT) $(FSIMAGE)
+	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o $(KERNELELF) $(ENTRYCODE) $(OBJS) -b binary $(OUTPREFIX)/initcode $(OUTPREFIX)/entryother $(FSIMAGE)
+	$(OBJDUMP) -S $(KERNELELF) > $(OUTPREFIX)/kernel.asm
+	$(OBJDUMP) -t $(KERNELELF) | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(OUTPREFIX)/kernel.sym
 
 $(KERNPREFIX)/vectors.S: $(TOOLSPREFIX)/vectors64.pl
 	perl $< > $(KERNPREFIX)/vectors.S
@@ -170,11 +174,11 @@ $(FSIMG): $(OUTPREFIX)/mkfs README.md $(UPROGS)
 	@mkdir -p $(IMGPREFIX)
 	$(OUTPREFIX)/mkfs $(FSIMG) README.md $(UPROGS)
 
-$(XV6IMG): $(OUTPREFIX)/bootblock $(OUTPREFIX)/kernel.elf $(FSIMG)
+$(XV6IMG): $(OUTPREFIX)/bootblock $(KERNELELF) $(FSIMG)
 	@mkdir -p $(IMGPREFIX)
 	dd if=/dev/zero of=$(XV6IMG) count=10000
 	dd if=$(OUTPREFIX)/bootblock of=$(XV6IMG) conv=notrunc
-	dd if=$(OUTPREFIX)/kernel.elf of=$(XV6IMG) seek=1 conv=notrunc
+	dd if=$(KERNELELF) of=$(XV6IMG) seek=1 conv=notrunc
 
 $(MEMFSIMG): $(OUTPREFIX)/bootblock $(OUTPREFIX)/kernelmemfs.elf
 	@mkdir -p $(IMGPREFIX)
@@ -186,7 +190,7 @@ clean:
 	rm -rf $(OUTPREFIX) $(FSPREFIX)
 
 
-# GDB ================================
+# QEMU and GDB ================================
 
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
@@ -213,4 +217,49 @@ qemu-gdb: $(FSIMG) $(XV6IMG) .gdbinit
 qemu-nox-gdb: $(FSIMG) $(XV6IMG) .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
+
+# SERVAL ================================
+#
+VERIFY_TEST := \
+	verif/test.rkt
+
+SERVAL_DIR = ../serval
+SERVAL_LLVM := racket $(SERVAL_DIR)/serval/bin/serval-llvm.rkt
+
+RKTGENPREFIX = verif/generated
+ASMRKTGEN = $(RKTGENPREFIX)/kernel.asm.rkt
+GLOBALRKTGEN = $(RKTGENPREFIX)/kernel.global.rkt
+MAPRKTGEN = $(RKTGENPREFIX)/kernel.map.rkt
+
+RACO_JOBS = 1
+RACO_TIMEOUT = 1200
+RACO_TEST = raco test --check-stderr --table --timeout $(RACO_TIMEOUT) --jobs $(RACO_JOBS)
+
+$(VERIFY_TEST): | \
+	$(ASMRKTGEN) \
+	$(GLOBALRKTGEN) \
+	$(MAPRKTGEN)
+
+verify-kernel: $(VERIFY_TEST)
+	$(RACO_TEST) $^
+
+$(GLOBALRKTGEN): $(KERNELELF)
+	@mkdir -p $(RKTGENPREFIX)
+	@echo "#lang reader serval/lang/dwarf" > $@~
+	@$(OBJDUMP) --dwarf=info $< >> $@~
+	@mv $@~ $@
+
+ASMRKTGEN_OBJDUMPFLAGS = -M no-aliases --prefix-address -w -f -d -z --show-raw-insn
+$(ASMRKTGEN): $(KERNELELF)
+	@mkdir -p $(RKTGENPREFIX)
+	@echo "#lang reader serval/riscv/objdump" > $@~
+	@$(OBJDUMP) $(ASMRKTGEN_OBJDUMPFLAGS) $< >> $@~
+	@mv $@~ $@
+
+$(MAPRKTGEN): $(KERNELELF)
+	@mkdir -p $(RKTGENPREFIX)
+	@echo "#lang reader serval/lang/nm" > $@~
+	@$(NM) --print-size --numeric-sort $< >> $@~
+	@mv $@~ $@
+
 
