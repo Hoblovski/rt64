@@ -188,6 +188,8 @@ $(MEMFSIMG): $(OUTPREFIX)/bootblock $(OUTPREFIX)/kernelmemfs.elf
 clean:
 	rm -rf $(OUTPREFIX) $(FSPREFIX)
 
+format:
+	find src -name "*.[ch]" | xargs clang-format -i
 
 # QEMU and GDB ================================
 
