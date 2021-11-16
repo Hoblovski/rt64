@@ -31,7 +31,6 @@ OBJS := \
 	$(KOBJPREFIX)/main.o\
 	$(KOBJPREFIX)/mp.o\
 	$(KOBJPREFIX)/acpi.o\
-	$(KOBJPREFIX)/picirq.o\
 	$(KOBJPREFIX)/pipe.o\
 	$(KOBJPREFIX)/proc.o\
 	$(KOBJPREFIX)/spinlock.o\
@@ -40,7 +39,6 @@ OBJS := \
 	$(KOBJPREFIX)/syscall.o\
 	$(KOBJPREFIX)/sysfile.o\
 	$(KOBJPREFIX)/sysproc.o\
-	$(KOBJPREFIX)/timer.o\
 	$(KOBJPREFIX)/trapasm64.o\
 	$(KOBJPREFIX)/trap.o\
 	$(KOBJPREFIX)/uart.o\
@@ -145,6 +143,7 @@ $(FSPREFIX)/forktest: $(UOBJPREFIX)/forktest.o $(ULIB)
 	$(OBJDUMP) -S $(FSPREFIX)/forktest > $(OUTPREFIX)/forktest.asm
 
 $(OUTPREFIX)/mkfs: $(TOOLSPREFIX)/mkfs.c $(INCLUDEPATH)/fs.h
+	@mkdir -p $(OUTPREFIX)
 	gcc -Werror -Wall -o $(OUTPREFIX)/mkfs $(TOOLSPREFIX)/mkfs.c
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
