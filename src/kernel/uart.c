@@ -1,15 +1,8 @@
-// Intel 8250 serial port (UART).
+/*
+ * Driver for Intel 8250 serial port (UART).
+ */
 
-#include "types.h"
-#include "defs.h"
-#include "param.h"
-#include "traps.h"
-#include "spinlock.h"
-#include "fs.h"
-#include "file.h"
-#include "mmu.h"
-#include "proc.h"
-#include "x86.h"
+#include "rt64.h"
 
 #define COM1 0x3f8
 
@@ -40,16 +33,9 @@ void uartearlyinit(void)
 		uartputc(*p);
 }
 
-void uartinit(void)
+void microdelay(int us)
 {
-	if (!uart)
-		return;
-
-	// Acknowledge pre-existing interrupt conditions;
-	// enable interrupts.
-	inb(COM1 + 2);
-	inb(COM1 + 0);
-	ioapicenable(IRQ_COM1, 0);
+	// on real hardware tune this dynamically
 }
 
 void uartputc(int c)
@@ -61,18 +47,4 @@ void uartputc(int c)
 	for (i = 0; i < 128 && !(inb(COM1 + 5) & 0x20); i++)
 		microdelay(10);
 	outb(COM1 + 0, c);
-}
-
-static int uartgetc(void)
-{
-	if (!uart)
-		return -1;
-	if (!(inb(COM1 + 5) & 0x01))
-		return -1;
-	return inb(COM1 + 0);
-}
-
-void uartintr(void)
-{
-	consoleintr(uartgetc);
 }

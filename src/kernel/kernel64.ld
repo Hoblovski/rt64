@@ -2,7 +2,7 @@
    See the GNU ld 'info' manual ("info ld") to learn the syntax. */
 
 /* OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386") */
-OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
+OUTPUT_FORMAT(elf64-x86-64)
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(_start)
 
@@ -10,9 +10,8 @@ mboot_load_addr = 0x00100000;
 
 SECTIONS
 {
-	/* Link the kernel at this address: "." means the current address */
-        /* Must be equal to KERNLINK */
-	. = 0xFFFFFFFF80100000; 
+	/* Kernel code / data starts here, 8000_0000..here belong to devices */
+	. = 0xFFFFFFFF80100000;
 
 	PROVIDE(begin = .);
 
@@ -26,8 +25,8 @@ SECTIONS
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
 	}
 
-	/* Adjust the address for the data segment to the next page */
 	. = ALIGN(0x1000);
+
 
 	/* Conventionally, Unix linkers provide pseudo-symbols
 	 * etext, edata, and end, at the end of the text, data, and bss.

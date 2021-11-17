@@ -5,36 +5,34 @@
 // bootmain() loads a multiboot kernel image from the disk starting at
 // sector 1 and then jumps to the kernel entry routine.
 
-#include "types.h"
-#include "x86.h"
-#include "memlayout.h"
+#include "rt64boot.h"
 
 #define SECTSIZE 512
 
 struct mbheader {
-	uint32 magic;
-	uint32 flags;
-	uint32 checksum;
-	uint32 header_addr;
-	uint32 load_addr;
-	uint32 load_end_addr;
-	uint32 bss_end_addr;
-	uint32 entry_addr;
+	u32 magic;
+	u32 flags;
+	u32 checksum;
+	u32 header_addr;
+	u32 load_addr;
+	u32 load_end_addr;
+	u32 bss_end_addr;
+	u32 entry_addr;
 };
 
-void readseg(uchar *, uint, uint);
+void readseg(u8 *, usize, usize);
 
 void bootmain(void)
 {
 	struct mbheader *hdr;
 	void (*entry)(void);
-	uint32 *x;
-	uint n;
+	u32 *x;
+	usize n;
 
-	x = (uint32 *)0x10000; // scratch space
+	x = (u32 *)0x10000; // scratch space
 
 	// multiboot header must be in the first 8192 bytes
-	readseg((uchar *)x, 8192, 0);
+	readseg((u8 *)x, 8192, 0);
 
 	for (n = 0; n < 8192 / 4; n++)
 		if (x[n] == 0x1BADB002)
@@ -54,7 +52,7 @@ found_it:
 	if (hdr->load_end_addr < hdr->load_addr)
 		return; // no idea how much to load
 
-	readseg((uchar *)hdr->load_addr, (hdr->load_end_addr - hdr->load_addr),
+	readseg((u8 *)hdr->load_addr, (hdr->load_end_addr - hdr->load_addr),
 		(n * 4) - (hdr->header_addr - hdr->load_addr));
 
 	if (hdr->bss_end_addr > hdr->load_end_addr)
@@ -75,7 +73,7 @@ void waitdisk(void)
 }
 
 // Read a single sector at offset into dst.
-void readsect(void *dst, uint offset)
+void readsect(void *dst, usize offset)
 {
 	// Issue command.
 	waitdisk();
@@ -93,9 +91,9 @@ void readsect(void *dst, uint offset)
 
 // Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
 // Might copy more than asked.
-void readseg(uchar *pa, uint count, uint offset)
+void readseg(u8 *pa, usize count, usize offset)
 {
-	uchar *epa;
+	u8 *epa;
 
 	epa = pa + count;
 
