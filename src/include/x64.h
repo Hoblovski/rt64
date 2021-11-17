@@ -164,60 +164,61 @@ struct trapframe {
 
 // Segment Descriptor
 struct segdesc {
-	usize lim_15_0 : 16; // Low bits of segment limit
-	usize base_15_0 : 16; // Low bits of segment base address
-	usize base_23_16 : 8; // Middle bits of segment base address
-	usize type : 4; // Segment type (see STS_ constants)
-	usize s : 1; // 0 = system, 1 = application
-	usize dpl : 2; // Descriptor Privilege Level
-	usize p : 1; // Present
-	usize lim_19_16 : 4; // High bits of segment limit
-	usize avl : 1; // Unused (available for software use)
-	usize rsv1 : 1; // Reserved
-	usize db : 1; // 0 = 16-bit segment, 1 = 32-bit segment
-	usize g : 1; // Granularity: limit scaled by 4K when set
-	usize base_31_24 : 8; // High bits of segment base address
+	u32 lim_15_0 : 16; // Low bits of segment limit
+	u32 base_15_0 : 16; // Low bits of segment base address
+	u32 base_23_16 : 8; // Middle bits of segment base address
+	u32 type : 4; // Segment type (see STS_ constants)
+	u32 s : 1; // 0 = system, 1 = application
+	u32 dpl : 2; // Descriptor Privilege Level
+	u32 p : 1; // Present
+	u32 lim_19_16 : 4; // High bits of segment limit
+	u32 avl : 1; // Unused (available for software use)
+	u32 rsv1 : 1; // Reserved
+	u32 db : 1; // 0 = 16-bit segment, 1 = 32-bit segment
+	u32 g : 1; // Granularity: limit scaled by 4K when set
+	u32 base_31_24 : 8; // High bits of segment base address
 };
 
 // Normal segment
 #define SEG(type, base, lim, dpl)                                              \
 	(struct segdesc)                                                       \
 	{                                                                      \
-		((lim) >> 12) & 0xffff, (usize)(base)&0xffff,                  \
-			((usizep)(base) >> 16) & 0xff, type, 1, dpl, 1,        \
-			(usizep)(lim) >> 28, 0, 0, 1, 1, (usizep)(base) >> 24  \
+		((lim) >> 12) & 0xffff, (u32)(base)&0xffff,                    \
+			((usize)(base) >> 16) & 0xff, type, 1, dpl, 1,         \
+			(usize)(lim) >> 28, 0, 0, 1, 1, (usize)(base) >> 24    \
 	}
 #define SEG16(type, base, lim, dpl)                                            \
 	(struct segdesc)                                                       \
 	{                                                                      \
-		(lim) & 0xffff, (usizep)(base)&0xffff,                         \
-			((usizep)(base) >> 16) & 0xff, type, 1, dpl, 1,        \
-			(usizep)(lim) >> 16, 0, 0, 1, 0, (usizep)(base) >> 24  \
+		(lim) & 0xffff, (usize)(base)&0xffff,                          \
+			((usize)(base) >> 16) & 0xff, type, 1, dpl, 1,         \
+			(usize)(lim) >> 16, 0, 0, 1, 0, (usize)(base) >> 24    \
 	}
 
+// XXX: this is not 64 bit.
 // Task state segment format
 struct taskstate {
-	usize link; // Old ts selector
-	usize esp0; // Stack pointers and segment selectors
+	u32 link; // Old ts selector
+	u32 esp0; // Stack pointers and segment selectors
 	u16 ss0; //   after an increase in privilege level
 	u16 padding1;
-	usize *esp1;
+	u32 *esp1;
 	u16 ss1;
 	u16 padding2;
-	usize *esp2;
+	u32 *esp2;
 	u16 ss2;
 	u16 padding3;
-	usize cr3; // Page directory base
-	usize *eip; // Saved state from last task switch
-	usize eflags;
-	usize eax; // More saved state (registers)
-	usize ecx;
-	usize edx;
-	usize ebx;
-	usize *esp;
-	usize *ebp;
-	usize esi;
-	usize edi;
+	u32 cr3; // Page directory base
+	u32 *eip; // Saved state from last task switch
+	u32 eflags;
+	u32 eax; // More saved state (registers)
+	u32 ecx;
+	u32 edx;
+	u32 ebx;
+	u32 *esp;
+	u32 *ebp;
+	u32 esi;
+	u32 edi;
 	u16 es; // Even more saved state (segment selectors)
 	u16 padding4;
 	u16 cs;
@@ -238,15 +239,15 @@ struct taskstate {
 
 // Gate descriptors for interrupts and traps
 struct gatedesc {
-	usize off_15_0 : 16; // low 16 bits of offset in segment
-	usize cs : 16; // code segment selector
-	usize args : 5; // # args, 0 for interrupt/trap gates
-	usize rsv1 : 3; // reserved(should be zero I guess)
-	usize type : 4; // type(STS_{TG,IG32,TG32})
-	usize s : 1; // must be 0 (system)
-	usize dpl : 2; // descriptor(meaning new) privilege level
-	usize p : 1; // Present
-	usize off_31_16 : 16; // high bits of offset in segment
+	u32 off_15_0 : 16; // low 16 bits of offset in segment
+	u32 cs : 16; // code segment selector
+	u32 args : 5; // # args, 0 for interrupt/trap gates
+	u32 rsv1 : 3; // reserved(should be zero I guess)
+	u32 type : 4; // type(STS_{TG,IG32,TG32})
+	u32 s : 1; // must be 0 (system)
+	u32 dpl : 2; // descriptor(meaning new) privilege level
+	u32 p : 1; // Present
+	u32 off_31_16 : 16; // high bits of offset in segment
 };
 
 // Set up a normal interrupt/trap gate descriptor.
@@ -259,7 +260,7 @@ struct gatedesc {
 //        this interrupt/trap gate explicitly using an int instruction.
 #define SETGATE(gate, istrap, sel, off, d)                                     \
 	{                                                                      \
-		(gate).off_15_0 = (usize)(off)&0xffff;                         \
+		(gate).off_15_0 = (u32)(off)&0xffff;                           \
 		(gate).cs = (sel);                                             \
 		(gate).args = 0;                                               \
 		(gate).rsv1 = 0;                                               \
@@ -267,5 +268,5 @@ struct gatedesc {
 		(gate).s = 0;                                                  \
 		(gate).dpl = (d);                                              \
 		(gate).p = 1;                                                  \
-		(gate).off_31_16 = (usize)(off) >> 16;                         \
+		(gate).off_31_16 = (u32)(off) >> 16;                           \
 	}
