@@ -1,5 +1,6 @@
 # KERNEL ================================
 KERNPREFIX = src/kernel
+KLIBPREFIX = src/klib
 USERPREFIX = src/user
 ULIBPREFIX = src/ulib
 TOOLSPREFIX = src/tools
@@ -16,7 +17,10 @@ KERNELELF = $(OUTPREFIX)/kernel.elf
 OBJS := \
 	$(KOBJPREFIX)/main.o\
 	$(KOBJPREFIX)/uart.o\
-	$(KOBJPREFIX)/console.o
+	$(KOBJPREFIX)/console.o\
+	$(KOBJPREFIX)/acpi.o\
+	$(KOBJPREFIX)/lapic.o\
+	$(KOBJPREFIX)/string.o
 
 CC = gcc
 AS = gas
@@ -38,6 +42,10 @@ all: $(XV6IMG)
 
 # kernel object files
 $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.c
+	@mkdir -p $(KOBJPREFIX)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(KOBJPREFIX)/%.o: $(KLIBPREFIX)/%.c
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(CFLAGS) -c -o $@ $<
 

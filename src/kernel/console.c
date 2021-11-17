@@ -28,7 +28,7 @@ static void printint(int xx, int base, int sign)
 {
 	char buf[16];
 	int i;
-	usize x;
+	unsigned x;
 
 	if (sign && (sign = xx < 0))
 		x = -xx;

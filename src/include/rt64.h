@@ -6,6 +6,9 @@
 		__attribute__((unused))
 
 #include "param.h" // #define's
-#include "types.h" // typedefs and structs
-#include "defs.h" // function prototypes
+#include "types.h" // typedefs and structs, extern variables
+#include "defs.h" // function prototypes, extern variables
+#include "mem.h" // memory layout, manipulation utilities
 #include "x64.h" // platform specific
+
+#include "klib.h"

@@ -5,11 +5,9 @@ char a[4];
 int main(void)
 {
 	uartearlyinit();
-	cprintf("BSP starting rt64\n\n");
-	cprintf("BSP starting rt64\n\n");
-	cprintf("%d %p %p %x\n", 124, a + 1, a + 2, 0xdeadbeef);
-	panic("me panic");
-	cprintf("BSP starting rt64\n\n");
+	u32 x = 0xfec00000;
+	cprintf("main: BSP starting rt64 %x ...\n", x);
+	acpiinit();
 
 	while (1)
 		;
