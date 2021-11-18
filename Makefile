@@ -20,7 +20,8 @@ OBJS := \
 	$(KOBJPREFIX)/console.o\
 	$(KOBJPREFIX)/acpi.o\
 	$(KOBJPREFIX)/lapic.o\
-	$(KOBJPREFIX)/string.o
+	$(KOBJPREFIX)/string.o\
+	$(KOBJPREFIX)/paging.o
 
 CC = gcc
 AS = gas
@@ -52,6 +53,10 @@ $(KOBJPREFIX)/%.o: $(KLIBPREFIX)/%.c
 $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.S
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(ASFLAGS) -c -o $@ $<
+
+$(KOBJPREFIX)/%.i: $(KERNPREFIX)/%.c
+	@mkdir -p $(KOBJPREFIX)
+	$(CC) $(CFLAGS) -E -o $@ $<
 
 # bootblock
 $(OUTPREFIX)/bootblock: $(KERNPREFIX)/bootasm.S $(KERNPREFIX)/bootmain.c

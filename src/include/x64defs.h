@@ -71,12 +71,23 @@
 // Paging
 #define PG_SZ4K 0x1000 // Size of a 4K page in bytes
 #define PG_SZ2M 0x200000 // Size of a 2M huge page in bytes
-#define PG_SZ1G 0x4000000  // Size of a 1G huge page in bytes
+#define PG_SZ1G 0x4000000 // Size of a 1G huge page in bytes
 #define PG_NENT 512 // Number of entries in a page table
+
+#define PT_SHIFT 12
+#define PD_SHIFT 21
+#define PDPT_SHIFT 30
+#define PML4_SHIFT 39
+#define PML4_IDX(va) (((va) >> PML4_SHIFT) & (PG_NENT - 1))
+#define PDPT_IDX(va) (((va) >> PDPT_SHIFT) & (PG_NENT - 1))
+#define PD_IDX(va) (((va) >> PD_SHIFT) & (PG_NENT - 1))
+#define PT_IDX(va) (((va) >> PT_SHIFT) & (PG_NENT - 1))
 
 // Page table flags
 #define PF_P 1 // Present
 #define PF_W 2 // Writable
 #define PF_WP 3 // Writable and present
 #define PF_U 4 // User accessible
+#define PF_PWT 8 // Write through
+#define PF_PCD 16 // Cache disable
 #define PF_PS 128 // Huge page

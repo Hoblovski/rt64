@@ -48,11 +48,11 @@ mboot_entry:
   mov $0x3000, %ecx
   rep stosb
 
-# P4ML[0] -> 0x2000 (PDPT-A)
+# PML4[0] -> 0x2000 (PDPT-A)
   mov $(0x2000 | PF_WP), %eax
   mov %eax, 0x1000
 
-# P4ML[511] -> 0x3000 (PDPT-B)
+# PML4[511] -> 0x3000 (PDPT-B)
   mov $(0x3000 | PF_WP), %eax
   mov %eax, 0x1FF8
 
@@ -72,7 +72,7 @@ mboot_entry:
 
 .global entry32mp
 entry32mp:
-# CR3 -> 0x1000 (P4ML)
+# CR3 -> 0x1000 (PML4)
   mov $0x1000, %eax
   mov %eax, %cr3
 

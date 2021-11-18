@@ -24,6 +24,8 @@ FFFF_FFFF_8000_0000 ... FFFF_FFFF_BFFF_FFFF (+1G)	->	0000_0000_0000_0000 ... 000
 	by a single 1G huge page
 ```
 
+With PML4 page table at PA 0x1000.
+
 # BUGS
 For now it's a little messy on `int/unsigned/u32/u64/usize`.
 

@@ -1,5 +1,8 @@
 #pragma once
 
+// kernel.ld
+extern char end[];
+
 // uart.c
 void uartearlyinit(void);
 void microdelay(int us);
@@ -18,3 +21,6 @@ extern u8 ioapicid;
 
 // lapic.c
 extern volatile u32 *lapic;
+
+// paging.c
+void paginginit(void);

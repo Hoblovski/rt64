@@ -5,6 +5,14 @@
 	static int static_assertion_##MSG[(COND) ? 1 : -1]                     \
 		__attribute__((unused))
 
+#define ASSERT(x)                                                              \
+	do {                                                                   \
+		if (!(x)) {                                                    \
+			cprintf("At %s:%d\n  %s\n", __FILE__, __LINE__, #x);   \
+			panic("Assertion failed");                             \
+		}                                                              \
+	} while (0)
+
 #include "param.h" // #define's
 #include "types.h" // typedefs and structs, extern variables
 #include "defs.h" // function prototypes, extern variables

@@ -13,6 +13,11 @@
 // Returns an integer
 #define V2P(a) (((usize)(a)) - KERNBASE)
 // Returns a pointer
-#define P2V(a) (((void *)(a)) + KERNBASE)
+#define P2V(a) (((void *)((usize) (a))) + KERNBASE)
 // Only for high-address devices like *APIC. Returns a pointer
-#define IO2V(a) (((void *)(a)) - DEVSPACE + DEVBASE)
+#define IO2V(a) (((void *)((usize) (a))) - DEVSPACE + DEVBASE)
+
+// Whether a is aligned. pgsize must be power of 2
+#define ALIGNED(a, pgsize) (!((a) & ((pgsize) - 1)))
+// Align a down. pgsize must be power of 2
+#define ALIGN(a, pgsize) ((a) & (~((pgsize) - 1)))
