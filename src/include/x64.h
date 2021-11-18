@@ -1,6 +1,8 @@
 #pragma once
 // Routines to let C code use special x86 instructions.
 
+#include "x64defs.h"
+
 static inline u8 inb(u16 port)
 {
 	u8 data;

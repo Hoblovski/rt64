@@ -15,7 +15,7 @@ Exec flow:
 -> main.c:main				[BSP init]
 ```
 
-Mem upon boot (i.e. entry to main) is set by `mboot_entry` and mapped as follows
+Mem upon boot (i.e. entry to main) is set by `mboot_entry` in `entry64.S` and mapped as follows
 ```
 0000_0000_0000_0000 ... 0000_0000_3FFF_FFFF (+1G)	->	0000_0000_0000_0000 ... 0000_0000_3FFF_FFFF
 	by 512 huge pages each is 2M

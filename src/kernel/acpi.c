@@ -123,7 +123,7 @@ static struct acpi_rdsp *find_rdsp(void)
 
 static void acpi_config_smp(struct acpi_madt *madt)
 {
-	u32 lapic_addr;
+	u32 lapic_paddr;
 	usize nioapic = 0;
 	u8 *p, *e;
 
@@ -132,7 +132,7 @@ static void acpi_config_smp(struct acpi_madt *madt)
 	if (madt->header.length < sizeof(struct acpi_madt))
 		panic("acpi: invalid madt");
 
-	lapic_addr = madt->lapic_addr_phys;
+	lapic_paddr = madt->lapic_addr_phys;
 
 	p = madt->table;
 	e = p + madt->header.length - sizeof(struct acpi_madt);
@@ -179,7 +179,7 @@ static void acpi_config_smp(struct acpi_madt *madt)
 
 	if (ncpu) {
 		ismp = 1;
-		lapic = IO2V(((usize)lapic_addr));
+		lapic = IO2V(((usize)lapic_paddr));
 	} else {
 		panic("acpi: cannot detect lapic");
 	}
