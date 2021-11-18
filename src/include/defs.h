@@ -21,6 +21,7 @@ extern u8 ioapicid;
 
 // lapic.c
 extern volatile u32 *lapic;
+void lapicinit(void);
 
 // paging.c
 void paginginit(void);

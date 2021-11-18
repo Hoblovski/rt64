@@ -1,9 +1,7 @@
 #include "rt64.h"
 
-static u64 kpml4[PG_NENT]
-__attribute__((__aligned__(PG_SZ4K)));
-static u64 kpdpt[PG_NENT]
-__attribute__((__aligned__(PG_SZ4K)));
+static u64 kpml4[PG_NENT] __attribute__((__aligned__(PG_SZ4K)));
+static u64 kpdpt[PG_NENT] __attribute__((__aligned__(PG_SZ4K)));
 
 static u64 iopd[PG_NENT];
 
