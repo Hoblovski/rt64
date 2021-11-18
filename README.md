@@ -1,5 +1,4 @@
 # KERNEL
-From swetland/xv6.git, the 64-bit xv6.
 
 # SETUP
 
@@ -28,3 +27,5 @@ FFFF_FFFF_8000_0000 ... FFFF_FFFF_BFFF_FFFF (+1G)	->	0000_0000_0000_0000 ... 000
 # BUGS
 For now it's a little messy on `int/unsigned/u32/u64/usize`.
 
+# ACKNOWLEDGEMENT
+Much code is adopted (or, copied) from xv6 and swetland/xv6.
