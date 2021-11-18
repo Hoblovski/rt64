@@ -22,6 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "asm.h"
 
 #define mboot_magic 0x1badb002
 #define mboot_flags 0x00010000
@@ -41,40 +42,27 @@ mboot_header:
   .long mboot_entry_addr
 
 mboot_entry:
-
-# zero 4 pages for our bootstrap page tables
+# zero 3 pages for our bootstrap page tables
   xor %eax, %eax
   mov $0x1000, %edi
-  mov $0x5000, %ecx
+  mov $0x3000, %ecx
   rep stosb
 
 # P4ML[0] -> 0x2000 (PDPT-A)
-  mov $(0x2000 | 3), %eax
+  mov $(0x2000 | PF_WP), %eax
   mov %eax, 0x1000
 
 # P4ML[511] -> 0x3000 (PDPT-B)
-  mov $(0x3000 | 3), %eax
+  mov $(0x3000 | PF_WP), %eax
   mov %eax, 0x1FF8
 
-# PDPT-A[0] -> 0x4000 (PD)
-  mov $(0x4000 | 3), %eax
+# PDPT-A[0] -> 0x0 (1G huge page)
+  mov $(0x0 | PF_WP | PF_PS), %eax
   mov %eax, 0x2000
 
-# PDPT-B[510] -> 0x4000 (PD)
-  mov $(0x4000 | 3), %eax
+# PDPT-B[510] -> 0x0 (1G huge page)
+  mov $(0x0 | PF_WP | PF_PS), %eax
   mov %eax, 0x3FF0
-
-# PD[0..511] -> 0..1024MB
-  mov $0x83, %eax
-# initial pde: addr = 0 ; flags = PG_HUGE2M | PG_WR | PG_P
-  mov $0x4000, %ebx
-  mov $512, %ecx
-ptbl_loop:
-  mov %eax, (%ebx)
-  add $0x200000, %eax
-  add $0x8, %ebx
-  dec %ecx
-  jnz ptbl_loop
 
 # Clear ebx for initial processor boot.
 # When secondary processors boot, they'll call through

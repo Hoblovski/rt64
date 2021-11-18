@@ -74,3 +74,9 @@
 #define PG_SZ1G 0x4000000  // Size of a 1G huge page in bytes
 #define PG_NENT 512 // Number of entries in a page table
 
+// Page table flags
+#define PF_P 1 // Present
+#define PF_W 2 // Writable
+#define PF_WP 3 // Writable and present
+#define PF_U 4 // User accessible
+#define PF_PS 128 // Huge page
