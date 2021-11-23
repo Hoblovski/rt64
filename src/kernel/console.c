@@ -11,40 +11,38 @@ static void consputc(int);
 static int panicked = 0;
 static char digits[] = "0123456789abcdef";
 
-static void printptr(void *ptr)
+static void printint(isize xx, long base, int sign, int len, char prefix)
 {
-	u64 x = (u64)ptr;
-	char s[16];
-	int sl = 0;
-	for (int i = 0; i < XLENB * 2; i++) {
-		s[sl++] = digits[x & 15];
-		x >>= 4;
-	}
-	for (int i = sl - 1; i >= 0; i--)
-		consputc(s[i]);
-}
+	char buf[34];
 
-static void printint(int xx, int base, int sign)
-{
-	char buf[16];
-	int i;
-	unsigned x;
-
+	usize x;
 	if (sign && (sign = xx < 0))
 		x = -xx;
 	else
 		x = xx;
 
-	i = 0;
+	int i = 0;
 	do {
 		buf[i++] = digits[x % base];
 	} while ((x /= base) != 0);
 
-	if (sign)
+	if (len != 0 && i < len) {
+		// need to pad prefix
+		ASSERT(prefix != 0);
+		while (i < len)
+			buf[i++] = prefix;
+		if (sign)
+			buf[i - 1] = '-';
+	} else if (sign)
 		buf[i++] = '-';
 
 	while (--i >= 0)
 		consputc(buf[i]);
+}
+
+static void printptr(void *ptr)
+{
+	printint((isize)ptr, 16, 0, 16, '0'); // will automatically sign-extend
 }
 
 #define BACKSPACE 0x100
@@ -87,10 +85,16 @@ void cprintf(char *fmt, ...)
 			break;
 		switch (c) {
 		case 'd':
-			printint(va_arg(ap, int), 10, 1);
+			printint((long)va_arg(ap, int), 10, 1, 0, 0);
+			break;
+		case 'l':
+			printint(va_arg(ap, long), 10, 1, 0, 0);
 			break;
 		case 'x':
-			printint(va_arg(ap, int), 16, 0);
+			printint((long)va_arg(ap, int), 16, 0, 0, 0);
+			break;
+		case 'y':
+			printint(va_arg(ap, long), 16, 0, 0, 0);
 			break;
 		case 'p':
 			printptr(va_arg(ap, void *));
