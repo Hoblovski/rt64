@@ -82,12 +82,17 @@ void trapinit(void)
 static int ticks;
 void trap(struct trapframe *tf)
 {
-	u64 rsp;
+	static u64 last_tsc;
+	u64 rsp, tsc;
+
 	switch (tf->trapno) {
 	case T_IRQ0 + IRQ_TIMER:
 		ticks++;
+		tsc = rdtsc();
 		asm volatile("movq %%rsp, %0" : "=r"(rsp));
-		cprintf("timer: ticks=%d, rsp=%p\n", ticks, rsp);
+		cprintf("timer: ticks=%d, rsp=%p, tscint=%l\n", ticks, rsp,
+			tsc - last_tsc);
+		last_tsc = tsc;
 		lapiceoi();
 		break;
 	default:

@@ -137,6 +137,15 @@ static inline void lcr3(usize val)
 	asm volatile("mov %0,%%cr3" : : "r"(val));
 }
 
+// As in SDM2, RDTSC is not serializing instruction.
+// When used to test very short time intervals, insert a serializing instr e.g. CPUID.
+static inline unsigned long long rdtsc()
+{
+	u64 eax, edx;
+	__asm__ volatile("rdtsc" : "=a"(eax), "=d"(edx));
+	return (edx << 32) | eax;
+}
+
 struct trapframe {
 	u64 rax;
 	u64 rbx;
