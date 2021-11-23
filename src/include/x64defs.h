@@ -71,7 +71,7 @@
 // Paging
 #define PG_SZ4K 0x1000 // Size of a 4K page in bytes
 #define PG_SZ2M 0x200000 // Size of a 2M huge page in bytes
-#define PG_SZ1G 0x4000000 // Size of a 1G huge page in bytes
+#define PG_SZ1G 0x40000000 // Size of a 1G huge page in bytes
 #define PG_NENT 512 // Number of entries in a page table
 
 // Shifts
@@ -128,3 +128,7 @@
 #define IRQ_IDE 14
 #define IRQ_ERROR 19
 #define IRQ_SPURIOUS 31
+
+// LAPIC and IOAPIC
+#define DEFAULT_LAPIC_PADDR 0xFEE00000
+#define DEFAULT_IOAPIC_PADDR 0xFEC00000

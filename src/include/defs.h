@@ -20,7 +20,6 @@ extern int ismp;
 extern u8 ioapicid;
 
 // lapic.c
-extern volatile u32 *lapic;
 void lapicinit(void);
 
 // paging.c

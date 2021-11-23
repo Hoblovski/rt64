@@ -71,7 +71,7 @@ struct acpi_rsdt {
 #define SIG_MADT "APIC"
 struct acpi_madt {
 	struct acpi_desc_header header;
-	u32 lapic_addr_phys;
+	u32 addr;
 	u32 flags;
 	u8 table[0];
 } __attribute__((__packed__));
@@ -123,7 +123,6 @@ static struct acpi_rdsp *find_rdsp(void)
 
 static void acpi_config_smp(struct acpi_madt *madt)
 {
-	u32 lapic_paddr;
 	usize nioapic = 0;
 	u8 *p, *e;
 
@@ -132,7 +131,8 @@ static void acpi_config_smp(struct acpi_madt *madt)
 	if (madt->header.length < sizeof(struct acpi_madt))
 		panic("acpi: invalid madt");
 
-	lapic_paddr = madt->lapic_addr_phys;
+	if (madt->addr != DEFAULT_LAPIC_PADDR)
+		panic("got unexpected lapic address");
 
 	p = madt->table;
 	e = p + madt->header.length - sizeof(struct acpi_madt);
@@ -165,8 +165,10 @@ static void acpi_config_smp(struct acpi_madt *madt)
 			cprintf("acpi: ioapic#%d @%x id=%d base=%d\n", nioapic,
 				ioapic->addr, ioapic->id,
 				ioapic->interrupt_base);
+			if (ioapic->addr != DEFAULT_IOAPIC_PADDR)
+				panic("got unexpected ioapic address");
 			if (nioapic) {
-				cprintf("warning: multiple ioapics are not supported");
+				panic("multiple ioapics are not supported");
 			} else {
 				ioapicid = ioapic->id;
 			}
@@ -177,12 +179,8 @@ static void acpi_config_smp(struct acpi_madt *madt)
 		p += len;
 	}
 
-	if (ncpu) {
-		ismp = 1;
-		lapic = IO2V(((usize)lapic_paddr));
-	} else {
+	if (!ncpu)
 		panic("acpi: cannot detect lapic");
-	}
 }
 
 #define PHYSLIMIT 0x80000000
@@ -228,5 +226,4 @@ notmapped:
 
 struct cpu cpus[MAX_CPU];
 int ncpu;
-int ismp;
 u8 ioapicid;

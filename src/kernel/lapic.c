@@ -1,7 +1,7 @@
 #include "rt64.h"
 
-// Detected and initialized in acpi.c, points to physical addr 0xFEE0_0000 (the start address of APIC registers)
-volatile u32 *lapic;
+// Points to physical addr 0xFEE0_0000 (the start address of LAPIC registers)
+static volatile u32 *lapic;
 
 // Local APIC registers, divided by 4 for use as u32[] indices.
 #define ID (0x0020 / 4) // ID
@@ -39,13 +39,11 @@ static void lapicw(int index, int value)
 	lapic[index] = value;
 	lapic[ID]; // wait for write to finish, by reading
 }
-//PAGEBREAK!
 
 void lapicinit(void)
 {
 	// Needs LAPIC to be detected by ACPI.
-	if (!lapic)
-		return;
+	lapic = IO2V(((usize)DEFAULT_LAPIC_PADDR));
 
 	// Enable local APIC; set spurious interrupt vector.
 	lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));
@@ -85,4 +83,20 @@ void lapicinit(void)
 
 	// Enable interrupts on the APIC (but not on the processor).
 	lapicw(TPR, 0);
+}
+
+u32 lapicid(void)
+{
+	// Could get sched away and return wrong result
+	if (readeflags() & FL_IF)
+		panic("lapicid: IF is not 0");
+
+	return lapic[ID] >> 24;
+}
+
+// Acknowledge interrupt.
+void lapiceoi(void)
+{
+	if (lapic)
+		lapicw(EOI, 0);
 }
