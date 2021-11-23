@@ -23,6 +23,7 @@ static u8 tls[MAX_CPU][PG_SZ4K] ATTR_PAGEALIGN;
 
 __thread struct cpu *cpu;
 
+// TODO: split to percpu-init and primary-init
 // Setup IDT, TLS, GDT and TSS.
 void trapinit(void)
 {
@@ -96,7 +97,7 @@ void trap(struct trapframe *tf)
 		lapiceoi();
 		break;
 	default:
-		cprintf("trapno: %d\n", tf->trapno);
-		panic("unknown trap\n");
+		panic("unexpected trap %d from cpu %d rip %p (cr2=0x%x)\n",
+		      tf->trapno, curcpu->index, tf->rip, rcr2());
 	}
 }

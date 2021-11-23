@@ -101,7 +101,7 @@ format:
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
-CPUS ?= 2
+CPUS ?= 1
 QEMUOPTS = -net none -hda $(XV6IMG) -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
 qemu: $(XV6IMG)

@@ -16,7 +16,7 @@ void uartputc(int c);
 
 // console.c
 void cprintf(char *fmt, ...);
-void panic(char *s) __attribute__((noreturn));
+void panic(char *fmt, ...) __attribute__((noreturn));
 
 // acpi.c
 void acpiinit(void);

@@ -67,10 +67,15 @@ static void consputc(int c)
 void cprintf(char *fmt, ...)
 {
 	va_list ap;
+	va_start(ap, fmt);
+	vcprintf(fmt, ap);
+	va_end(ap);
+}
+
+void vcprintf(char *fmt, va_list ap)
+{
 	int i, c;
 	char *s;
-
-	va_start(ap, fmt);
 
 	// TODO: on MP, check locking console
 	if (fmt == 0)
@@ -118,12 +123,14 @@ void cprintf(char *fmt, ...)
 	}
 }
 
-void panic(char *s)
+void panic(char *fmt, ...)
 {
 	cli();
-	cprintf("panic: ");
-	cprintf(s);
-	cprintf("\n");
+	cprintf("======== panic ========\n");
+	va_list ap;
+	va_start(ap, fmt);
+	vcprintf(fmt, ap);
+	va_end(ap);
 	panicked = 1;
 	for (;;)
 		;

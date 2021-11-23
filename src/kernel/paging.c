@@ -4,6 +4,7 @@ static u64 kpml4[PG_NENT] ATTR_PAGEALIGN;
 static u64 kpdpt[PG_NENT] ATTR_PAGEALIGN;
 static u64 iopd[PG_NENT] ATTR_PAGEALIGN;
 
+// XXX: make less cryptic
 // Switch from bootloader's entrypml4 to kernel's pml4.
 void paginginit_bsp(void)
 {

@@ -104,6 +104,5 @@ u32 lapicid(void)
 // Acknowledge interrupt.
 void lapiceoi(void)
 {
-	if (lapic)
-		lapicw(EOI, 0);
+	lapicw(EOI, 0);
 }

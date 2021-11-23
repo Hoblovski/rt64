@@ -132,7 +132,7 @@ static void acpi_config_smp(struct acpi_madt *madt)
 		panic("acpi: invalid madt");
 
 	if (madt->addr != DEFAULT_LAPIC_PADDR)
-		panic("got unexpected lapic address");
+		panic("got unexpected lapic address %p", madt->addr);
 
 	p = madt->table;
 	e = p + madt->header.length - sizeof(struct acpi_madt);
@@ -183,8 +183,6 @@ static void acpi_config_smp(struct acpi_madt *madt)
 		panic("acpi: cannot detect lapic");
 }
 
-#define PHYSLIMIT 0x80000000
-
 void acpiinit(void)
 {
 	unsigned n, count;
@@ -193,13 +191,13 @@ void acpiinit(void)
 	struct acpi_madt *madt = 0;
 
 	rdsp = find_rdsp();
-	if (rdsp->rsdt_addr_phys > (u32)PHYSLIMIT)
+	if (rdsp->rsdt_addr_phys > (u32)MAX_PHYS_MEM)
 		goto notmapped;
 	rsdt = P2V(rdsp->rsdt_addr_phys);
 	count = (rsdt->header.length - sizeof(*rsdt)) / 4;
 	for (n = 0; n < count; n++) {
 		struct acpi_desc_header *hdr = P2V(rsdt->entry[n]);
-		if (rsdt->entry[n] > PHYSLIMIT)
+		if (rsdt->entry[n] > MAX_PHYS_MEM)
 			goto notmapped;
 		u8 sig[5], id[7], tableid[9], creator[5];
 		memmove(sig, hdr->signature, 4);
@@ -210,8 +208,9 @@ void acpiinit(void)
 		tableid[8] = 0;
 		memmove(creator, hdr->creator_id, 4);
 		creator[4] = 0;
-		cprintf("acpi: %s %s %s %x %s %x\n", sig, id, tableid,
-			hdr->oem_revision, creator, hdr->creator_revision);
+		cprintf("acpi: sig=%s id=%s tableid=%s oemrev=%x creat=%s creatrev=%x\n",
+			sig, id, tableid, hdr->oem_revision, creator,
+			hdr->creator_revision);
 		if (!memcmp(hdr->signature, SIG_MADT, 4))
 			madt = (void *)hdr;
 	}
@@ -220,7 +219,7 @@ void acpiinit(void)
 	return;
 
 notmapped:
-	cprintf("acpi: tables above 0x%x not mapped.\n", PHYSLIMIT);
+	cprintf("acpi: too much physical memory\n");
 	panic("acpi: tables not mapped");
 }
 

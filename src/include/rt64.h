@@ -8,8 +8,7 @@
 #define ASSERT(x)                                                              \
 	do {                                                                   \
 		if (!(x)) {                                                    \
-			cprintf("At %s:%d\n  %s\n", __FILE__, __LINE__, #x);   \
-			panic("Assertion failed");                             \
+			panic("assert: %s:%d (%s)\n", __FILE__, __LINE__, #x); \
 		}                                                              \
 	} while (0)
 
