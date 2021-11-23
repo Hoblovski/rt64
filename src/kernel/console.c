@@ -1,6 +1,7 @@
-// Console input and output.
-// Input is from the keyboard or serial port.
-// Output is written to the screen and serial port.
+/* Console input and output.
+ * Input is from the keyboard or serial port.
+ * Output is written to the CGA screen (TODO) and serial port.
+ */
 
 #include "rt64.h"
 

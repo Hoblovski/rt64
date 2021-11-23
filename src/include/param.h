@@ -4,5 +4,5 @@
 #define XLENB 8
 #define MAX_CPU 8
 
-// 4G memory. Should be consistent with other parameters
-#define MAX_ALLOC_FRAMES 1048576
+// From experience, a period of 1 000 000 000 is equal to 1 second on qemu.
+#define LAPIC_TIMER_PERIOD 10000000

@@ -1,3 +1,5 @@
+/* Local APIC drivers.
+ */
 #include "rt64.h"
 
 // Points to physical addr 0xFEE0_0000 (the start address of LAPIC registers)
@@ -40,6 +42,7 @@ static void lapicw(int index, int value)
 	lapic[ID]; // wait for write to finish, by reading
 }
 
+// On once on every cpu.
 void lapicinit(void)
 {
 	// Needs LAPIC to be detected by ACPI.
@@ -54,7 +57,7 @@ void lapicinit(void)
 	// TICR would be calibrated using an external time source.
 	lapicw(TDCR, X1);
 	lapicw(TIMER, PERIODIC | (T_IRQ0 + IRQ_TIMER));
-	lapicw(TICR, 10000000);
+	lapicw(TICR, LAPIC_TIMER_PERIOD);
 
 	// Disable logical interrupt lines.
 	lapicw(LINT0, MASKED);
@@ -83,8 +86,12 @@ void lapicinit(void)
 
 	// Enable interrupts on the APIC (but not on the processor).
 	lapicw(TPR, 0);
+
+	cprintf("[%d] lapic: init\n", lapicid());
 }
 
+// TODO: lapic id may not start from 0 or be consecutive, thus we should not use them for indices.
+// For now, ignore that.
 u32 lapicid(void)
 {
 	// Could get sched away and return wrong result

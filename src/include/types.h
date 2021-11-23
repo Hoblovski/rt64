@@ -24,7 +24,14 @@ STATIC_ASSERT(sizeof(usize) == XLENB, bad_platform);
 #endif
 
 // Per-CPU state
-struct cpu {
+struct percpu {
+	// cpuid: normalized (i.e. successive numbers from 0) based on lapicid
+	// INVARIANT: forall i, cpus[i].index = i
 	u8 index;
-	u8 lapicid; // Local APIC ID
+	// Local APIC ID
+	u8 lapicid;
+	// TLS storage, holds GDT and TSS
+	void *tls;
 };
+
+struct trapframe;

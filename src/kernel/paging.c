@@ -1,13 +1,13 @@
 #include "rt64.h"
 
-static u64 kpml4[PG_NENT] __attribute__((__aligned__(PG_SZ4K)));
-static u64 kpdpt[PG_NENT] __attribute__((__aligned__(PG_SZ4K)));
-static u64 iopd[PG_NENT] __attribute__((__aligned__(PG_SZ4K)));
+static u64 kpml4[PG_NENT] ATTR_PAGEALIGN;
+static u64 kpdpt[PG_NENT] ATTR_PAGEALIGN;
+static u64 iopd[PG_NENT] ATTR_PAGEALIGN;
 
 // Switch from bootloader's entrypml4 to kernel's pml4.
-void paginginit(void)
+void paginginit_bsp(void)
 {
-	kpml4[511] = V2P(kpdpt) | PF_P | PF_W;
+	kpml4[511] = V2P(kpdpt) | PF_WP;
 
 	// 0xFFFF_FFFF_8000_0000 ... 0xFFFF_FFFF_FFFF_FFFF (+2G) -> 0x0 (+2G)
 	// Kernel virtual mapping.
@@ -21,5 +21,11 @@ void paginginit(void)
 		iopd[i] = paddr | PF_WP | PF_PS | PF_PWT | PF_PCD;
 
 	lcr3(V2P(kpml4));
-	cprintf("paing: paginginit done\n");
+	cprintf("paing: bsp init\n");
+}
+
+void paginginit_ap(void)
+{
+	lcr3(V2P(kpml4));
+	cprintf("paing: ap init\n");
 }

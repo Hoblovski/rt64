@@ -21,3 +21,5 @@
 #define ALIGNED(a, pgsize) (!((a) & ((pgsize)-1)))
 // Align a down. pgsize must be power of 2
 #define ALIGN(a, pgsize) ((a) & (~((pgsize)-1)))
+
+#define ATTR_PAGEALIGN __attribute__((__aligned__(PG_SZ4K)));

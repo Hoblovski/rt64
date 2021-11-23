@@ -224,6 +224,6 @@ notmapped:
 	panic("acpi: tables not mapped");
 }
 
-struct cpu cpus[MAX_CPU];
+struct percpu cpus[MAX_CPU];
 int ncpu;
 u8 ioapicid;

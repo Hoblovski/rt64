@@ -4,9 +4,8 @@
 int main(void)
 {
 	uartearlyinit();
-	paginginit();
+	paginginit_bsp();
 
-	u32 x = 0xfec00000;
 	// testing cprintf
 	cprintf("%d %l %l %d\n", 1000000000, 10000000000, 1000000000,
 		10000000000);
@@ -19,7 +18,9 @@ int main(void)
 	cprintf("main: BSP starting rt64 ...\n");
 	acpiinit();
 	lapicinit();
-	cprintf("main: BSP lapicid = %d\n", lapicid());
+
+	trapinit();
+	sti();
 
 	while (1)
 		;

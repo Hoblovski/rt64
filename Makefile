@@ -21,7 +21,10 @@ OBJS := \
 	$(KOBJPREFIX)/acpi.o\
 	$(KOBJPREFIX)/lapic.o\
 	$(KOBJPREFIX)/string.o\
-	$(KOBJPREFIX)/paging.o
+	$(KOBJPREFIX)/paging.o\
+	$(KOBJPREFIX)/trap.o\
+	$(KOBJPREFIX)/vectors.o\
+	$(KOBJPREFIX)/trapasm.o
 
 CC = gcc
 AS = gas
@@ -57,6 +60,9 @@ $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.S
 $(KOBJPREFIX)/%.i: $(KERNPREFIX)/%.c
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(CFLAGS) -E -o $@ $<
+
+$(KERNPREFIX)/vectors.S: $(TOOLSPREFIX)/vectors.py
+	python3 $< > $(KERNPREFIX)/vectors.S
 
 # bootblock
 $(OUTPREFIX)/bootblock: $(KERNPREFIX)/bootasm.S $(KERNPREFIX)/bootmain.c
