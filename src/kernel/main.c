@@ -6,8 +6,7 @@ static void *kthread1(void *arg)
 		cprintf("  kthread1: got me\n");
 		yield();
 	}
-	while (1)
-		;
+	exit();
 }
 
 static void *kthread2(void *arg)
@@ -17,8 +16,7 @@ static void *kthread2(void *arg)
 		for (volatile int i = 0; i < 100000000; i++)
 			;
 	}
-	while (1)
-		yield();
+	exit();
 }
 
 // BSP starts here

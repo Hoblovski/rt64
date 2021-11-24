@@ -104,7 +104,8 @@ enum procstate {
 	// By default zero PCB is UNINIT PCB
 	UNINIT = 0,
 	RUNNABLE,
-	RUNNING
+	RUNNING,
+	EXITED
 };
 
 struct proc {

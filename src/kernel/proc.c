@@ -26,8 +26,8 @@ void sched(void)
 void yield(void)
 {
 	ASSERT(curproc->state == RUNNING);
-	cli();
-	curproc->state = RUNNABLE;
+	cli(); // will sti in idle
+	curproc->state = RUNNABLE; // must be after cli
 	sched();
 }
 
@@ -105,6 +105,10 @@ struct proc *spawn(const char *name, void *(*func)(void *))
 	return p;
 }
 
-void join()
+void exit(void)
 {
+	ASSERT(curproc->state == RUNNING);
+	cli();
+	curproc->state = EXITED;
+	sched();
 }

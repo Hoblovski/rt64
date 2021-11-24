@@ -57,4 +57,11 @@ void procinit(void);
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)).
  */
 struct proc *spawn(const char *name, void *(*func)(void *));
+/*
+ * Volutarily give up execution for current thread, but remain runnable.
+ */
 void yield(void);
+/*
+ * Terminate execution of current thread.
+ */
+void exit(void) __attribute__((noreturn));
