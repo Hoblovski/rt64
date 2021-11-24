@@ -87,7 +87,7 @@ void lapicinit(void)
 	// Enable interrupts on the APIC (but not on the processor).
 	lapicw(TPR, 0);
 
-	cprintf("[%d] lapic: init\n", lapicid());
+	cprintf("lapic: init ID=%d\n", lapicid());
 }
 
 // TODO: lapic id may not start from 0 or be consecutive, thus we should not use them for indices.

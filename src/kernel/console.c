@@ -63,15 +63,6 @@ static void consputc(int c)
 		uartputc(c);
 }
 
-// Print to the console. only understands %d, %x, %p, %s.
-void cprintf(char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	vcprintf(fmt, ap);
-	va_end(ap);
-}
-
 void vcprintf(char *fmt, va_list ap)
 {
 	int i, c;
@@ -121,6 +112,15 @@ void vcprintf(char *fmt, va_list ap)
 			break;
 		}
 	}
+}
+
+// Print to the console. only understands %d, %x, %p, %s.
+void cprintf(char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vcprintf(fmt, ap);
+	va_end(ap);
 }
 
 void panic(char *fmt, ...)

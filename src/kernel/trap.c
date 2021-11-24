@@ -91,8 +91,9 @@ void trap(struct trapframe *tf)
 		ticks++;
 		tsc = rdtsc();
 		asm volatile("movq %%rsp, %0" : "=r"(rsp));
-		cprintf("timer: ticks=%d, rsp=%p, tscint=%l\n", ticks, rsp,
-			tsc - last_tsc);
+		if (ticks % 10 == 0)
+			cprintf("timer: ticks=%d, rsp=%p, tscint=%l, curproc=%s\n",
+				ticks, rsp, tsc - last_tsc, curproc->name);
 		last_tsc = tsc;
 		lapiceoi();
 		break;

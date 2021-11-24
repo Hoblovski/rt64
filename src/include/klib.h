@@ -3,6 +3,9 @@
 #include "types.h"
 #include "x64.h"
 
+// standard
+#define NULL 0
+
 // string.c
 void *memset(void *dst, int c, usize n);
 int memcmp(const void *v1, const void *v2, usize n);

@@ -24,7 +24,9 @@ OBJS := \
 	$(KOBJPREFIX)/paging.o\
 	$(KOBJPREFIX)/trap.o\
 	$(KOBJPREFIX)/vectors.o\
-	$(KOBJPREFIX)/trapasm.o
+	$(KOBJPREFIX)/trapasm.o\
+	$(KOBJPREFIX)/switch.o\
+	$(KOBJPREFIX)/proc.o
 
 CC = gcc
 AS = gas
