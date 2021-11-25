@@ -75,8 +75,8 @@ void idlemain(void)
 		if ((p = find_runnable_proc())) {
 			curproc = p;
 			curproc->state = RUNNING;
-			cprintf("proc: sched %s -> %s\n",
-				curcpu->idleproc->name, curproc->name);
+			//			cprintf("proc: sched %s -> %s\n",
+			//				curcpu->idleproc->name, curproc->name);
 			swtch(curcpu->idlectx, &curproc->ctx);
 			ASSERT(curproc == curcpu->idleproc);
 		} else {
@@ -110,5 +110,14 @@ void exit(void)
 	ASSERT(curproc->state == RUNNING);
 	cli();
 	curproc->state = EXITED;
+	sched();
+}
+
+void sleep(int nticks)
+{
+	ASSERT(curproc->state == RUNNING);
+	cli(); // will sti in idle
+	curproc->state = SLEEPING; // must be after cli
+	curproc->sleeprem = nticks;
 	sched();
 }

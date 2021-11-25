@@ -101,11 +101,12 @@ struct trapframe {
 };
 
 enum procstate {
-	// By default zero PCB is UNINIT PCB
+	// So by default zero PCB is UNINIT PCB
 	UNINIT = 0,
 	RUNNABLE,
 	RUNNING,
-	EXITED
+	EXITED,
+	SLEEPING
 };
 
 struct proc {
@@ -113,6 +114,9 @@ struct proc {
 	char name[16];
 	// INVARIANT: forall i, proc[i].pid == i
 	volatile int pid;
+
+	// Remaining ticks to sleep, only valid if self.state == SLEEPING
+	int sleeprem;
 
 	// This is actually used for return to child...
 	// So when it's kernel only, we do not need it?

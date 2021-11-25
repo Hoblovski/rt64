@@ -39,6 +39,7 @@ void paginginit_ap(void);
 // ======== trap.c
 void trapinit();
 extern __thread struct percpu *curcpu;
+extern int ticks;
 
 // ======== switch.S
 /*
@@ -49,7 +50,7 @@ void swtch(struct context *old, struct context *new);
 // ======== proc.c
 extern struct proc procs[MAX_PROC];
 extern __thread struct proc *curproc;
-extern int nprocs;
+extern int nproc;
 void idlemain(void) __attribute__((noreturn));
 void procinit(void);
 /*
@@ -65,3 +66,10 @@ void yield(void);
  * Terminate execution of current thread.
  */
 void exit(void) __attribute__((noreturn));
+/*
+ * Sleep until the specified number of ticks has elapsed
+ * Real sleep time should be	TICK_INTERVAL * [nticks-1, nticks + eps]
+ *
+ * Should we use TSC for better resolution?
+ */
+void sleep(int nticks);

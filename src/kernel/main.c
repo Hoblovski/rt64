@@ -19,6 +19,20 @@ static void *kthread2(void *arg)
 	exit();
 }
 
+static void *kthread3(void *arg)
+{
+	extern u64 test_tsc;
+	u64 tsc;
+
+	for (int i = 0; i < 50; i++) {
+		tsc = rdtsc();
+		cprintf("  kthread3: ticks=%d, tscd=%l, going to sleep\n",
+			ticks, tsc - test_tsc);
+		sleep(10);
+	}
+	exit();
+}
+
 // BSP starts here
 int main(void)
 {
@@ -28,8 +42,9 @@ int main(void)
 	lapicinit();
 	trapinit();
 	procinit();
-	spawn("kthread1", kthread1);
-	spawn("kthread2", kthread2);
+	//spawn("kthread1", kthread1);
+	//spawn("kthread2", kthread2);
+	spawn("sleep", kthread3);
 
 	idlemain();
 }

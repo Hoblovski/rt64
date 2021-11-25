@@ -80,9 +80,11 @@ void trapinit(void)
 	cprintf("trap: init\n");
 }
 
-static int ticks;
+u64 test_tsc;
+int ticks;
 void trap(struct trapframe *tf)
 {
+	test_tsc = rdtsc();
 	static u64 last_tsc;
 	u64 rsp, tsc;
 
@@ -91,9 +93,14 @@ void trap(struct trapframe *tf)
 		ticks++;
 		tsc = rdtsc();
 		asm volatile("movq %%rsp, %0" : "=r"(rsp));
-		if (ticks % 10 == 0)
-			cprintf("timer: ticks=%d, rsp=%p, tscint=%l, curproc=%s\n",
-				ticks, rsp, tsc - last_tsc, curproc->name);
+		//		if (ticks % 10 == 0)
+		//			cprintf("timer: ticks=%d, rsp=%p, tsc=%l, tscint=%l, curproc=%s\n",
+		//				ticks, rsp, tsc, tsc - last_tsc, curproc->name);
+		for (int i = 0; i < nproc; i++)
+			if (procs[i].state == SLEEPING)
+				if (--procs[i].sleeprem == 0) {
+					procs[i].state = RUNNABLE;
+				}
 		last_tsc = tsc;
 		lapiceoi();
 		break;
