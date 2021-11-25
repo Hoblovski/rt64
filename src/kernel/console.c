@@ -14,6 +14,7 @@ static char digits[] = "0123456789abcdef";
 
 static void printint(isize xx, long base, int sign, int len, char prefix)
 {
+	ASSERT(len <= 33);
 	char buf[34];
 
 	usize x;
@@ -63,6 +64,11 @@ static void consputc(int c)
 		uartputc(c);
 }
 
+static int isdigit(char x)
+{
+	return x >= '0' && x <= '9';
+}
+
 void vcprintf(char *fmt, va_list ap)
 {
 	int i, c;
@@ -77,21 +83,29 @@ void vcprintf(char *fmt, va_list ap)
 			consputc(c);
 			continue;
 		}
-		c = fmt[++i] & 0xff;
+		i++;
+
+		// after % comes width specifier
+		int minwidth = 0;
+		while (fmt[i] && isdigit(fmt[i])) {
+			minwidth = minwidth * 10 + fmt[i] - '0';
+			i++;
+		}
+		c = fmt[i] & 0xff;
 		if (c == 0)
 			break;
 		switch (c) {
 		case 'd':
-			printint((long)va_arg(ap, int), 10, 1, 0, 0);
+			printint((long)va_arg(ap, int), 10, 1, minwidth, ' ');
 			break;
 		case 'l':
-			printint(va_arg(ap, long), 10, 1, 0, 0);
+			printint(va_arg(ap, long), 10, 1, minwidth, ' ');
 			break;
 		case 'x':
-			printint((long)va_arg(ap, int), 16, 0, 0, 0);
+			printint((long)va_arg(ap, int), 16, 0, minwidth, ' ');
 			break;
 		case 'y':
-			printint(va_arg(ap, long), 16, 0, 0, 0);
+			printint(va_arg(ap, long), 16, 0, minwidth, ' ');
 			break;
 		case 'p':
 			printptr(va_arg(ap, void *));
