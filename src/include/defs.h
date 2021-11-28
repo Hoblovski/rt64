@@ -31,6 +31,11 @@ extern u8 ioapicid;
 void lapicinit(void);
 u32 lapicid(void);
 void lapiceoi(void);
+/*
+ * In one shot mode, it is a count-down register, starting from initial count.
+ * Otherwise it can be used to serve a similar purpose as TSC.
+ */
+u32 lapictimercnt(void);
 
 // ======== paging.c
 void paginginit_bsp(void);

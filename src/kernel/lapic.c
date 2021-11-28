@@ -90,6 +90,11 @@ void lapicinit(void)
 	cprintf("lapic: init ID=%d\n", lapicid());
 }
 
+u32 lapictimercnt(void) {
+	//return lapic[TCCR];
+	return *(volatile u32*) IO2V(0xFEE00390);
+}
+
 // TODO: lapic id may not start from 0 or be consecutive, thus we should not use them for indices.
 // For now, ignore that.
 u32 lapicid(void)
