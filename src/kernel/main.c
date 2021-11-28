@@ -2,8 +2,9 @@
 
 static void *kthread1(void *arg)
 {
+	cprintf("  kthread1: initarg=%d\n", (u64)arg);
 	for (int j = 0; j < 2; j++) {
-		cprintf("  kthread1: got me\n");
+		cprintf("  kthread1: got me %d\n", (u64)arg);
 		yield();
 	}
 	exit();
@@ -11,8 +12,9 @@ static void *kthread1(void *arg)
 
 static void *kthread2(void *arg)
 {
+	cprintf("  kthread2: initarg=%d\n", (u64)arg);
 	for (int j = 0; j < 2; j++) {
-		cprintf("  kthread2: got me\n");
+		cprintf("  kthread2: got me %d\n", (u64)arg);
 		for (volatile int i = 0; i < 100000000; i++)
 			;
 	}
@@ -42,9 +44,9 @@ int main(void)
 	lapicinit();
 	trapinit();
 	procinit();
-	//spawn("kthread1", kthread1);
-	//spawn("kthread2", kthread2);
-	spawn("sleep", kthread3);
+	spawn("kthread1", kthread1, 123);
+	spawn("kthread2", kthread2, 321);
+	//spawn("sleep", kthread3, NULL);
 
 	idlemain();
 }

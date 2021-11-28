@@ -1,8 +1,7 @@
 # Context switch between kernel threads
-#   void swtch(struct context **old, struct context *new)
-#	push *current_context
-#	*old = current_stack_top
-#	*current_context = *new
+#   void swtch(struct context *old, struct context *new)
+#	*old = current_context
+#	current_context = *new
 #
 # Clobbers caller-save registers
 
@@ -16,6 +15,7 @@ swtch:
   mov %r12, 24(%rdi)
   mov %rbx, 32(%rdi)
   mov %rbp, 40(%rdi)
+  mov %rdi, 64(%rdi)
 
   # save stack
   mov %rsp, 56(%rdi)
@@ -31,6 +31,7 @@ swtch:
   mov 24(%rsi), %r12
   mov 32(%rsi), %rbx
   mov 40(%rsi), %rbp
+  mov 64(%rsi), %rdi
 
   # restore stack
   mov 56(%rsi), %rsp

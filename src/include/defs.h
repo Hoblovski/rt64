@@ -57,7 +57,7 @@ void procinit(void);
  * Spawn a function.
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)).
  */
-struct proc *spawn(const char *name, void *(*func)(void *));
+struct proc *spawn(const char *name, void *(*func)(void *), void *initarg);
 /*
  * Volutarily give up execution for current thread, but remain runnable.
  */

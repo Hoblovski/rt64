@@ -55,11 +55,13 @@ struct percpu {
 //
 // Don't need to save %r10, %r11, %rdi, %rsi, %rdx, %rcx, %r8, %r9,
 // because they are caller-saved by x64 callingconv.
+// Also don't need to save %rip, but see below.
 //
 // Contexts are stored at proc->context, and might be pointed to by percpu->idlectx.
 //
 // When calling `swtch`, %rip will be on top of the stack.
 // But we still need this field, so we can designate a specific place to return to.
+// Same for rdi.
 struct context {
 	u64 r15; // 0
 	u64 r14; // 8
@@ -69,6 +71,7 @@ struct context {
 	u64 rbp; // 40
 	u64 rip; // 48
 	u64 rsp; // 56
+	u64 rdi; // 64
 };
 
 // Saved registers for passive context switches i.e. traps.

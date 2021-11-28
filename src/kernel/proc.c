@@ -85,7 +85,7 @@ void idlemain(void)
 	}
 }
 
-struct proc *spawn(const char *name, void *(*func)(void *))
+struct proc *spawn(const char *name, void *(*func)(void *), void *initarg)
 {
 	struct proc *p = &procs[nproc++];
 	safestrcpy(p->name, name, 16);
@@ -95,9 +95,10 @@ struct proc *spawn(const char *name, void *(*func)(void *))
 	p->ctx.rip = (u64)func;
 	p->kstack = kstacks[p->pid];
 
-	// reserve one u64: will put rip here
-	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ - XLENB;
+	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ;
 	p->ctx.rbp = (u64)p->kstack + KSTACK_SZ;
+
+	p->ctx.rdi = (u64)initarg;
 
 	// Set RUNNABLE only when everything has been setup
 	p->state = RUNNABLE;
