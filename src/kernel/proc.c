@@ -15,8 +15,10 @@ void sched(void)
 	if (readeflags() & FL_IF)
 		panic("sched interruptible");
 	struct proc *old = curproc;
+#ifdef DEBUG_SCHED
 	cprintf("proc: sched %s -> %s\n", curproc->name,
 		curcpu->idleproc->name);
+#endif
 
 	curproc = curcpu->idleproc;
 	swtch(&old->ctx, curcpu->idlectx);
@@ -67,7 +69,9 @@ struct proc *find_runnable_proc(void)
 void idlemain(void)
 {
 	for (;;) {
+#ifdef DEBUG_SCHED
 		cprintf("idle: enter\n");
+#endif
 		sti();
 
 		// TODO: lock ptable
@@ -75,12 +79,16 @@ void idlemain(void)
 		if ((p = find_runnable_proc())) {
 			curproc = p;
 			curproc->state = RUNNING;
-			//			cprintf("proc: sched %s -> %s\n",
-			//				curcpu->idleproc->name, curproc->name);
+#ifdef DEBUG_SCHED
+			cprintf("proc: sched %s -> %s\n",
+				curcpu->idleproc->name, curproc->name);
+#endif
 			swtch(curcpu->idlectx, &curproc->ctx);
 			ASSERT(curproc == curcpu->idleproc);
 		} else {
-			hlt(); // WFI. could harm real-time?
+#ifndef CONFIG_IDLE_POOL
+			hlt(); // WFI.
+#endif
 		}
 	}
 }

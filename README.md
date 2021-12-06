@@ -29,6 +29,8 @@ With PML4 page table at PA 0x1000.
 # BUGS
 For now it's a little messy on `int/unsigned/u32/u64/usize`.
 
+Makefile does not account for changes in .h files.
+
 # DEBUG
 ## addr2line
 Add a NPD on main, and it'll show

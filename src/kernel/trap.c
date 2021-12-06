@@ -85,7 +85,6 @@ int ticks;
 void trap(struct trapframe *tf)
 {
 	test_tsc = rdtsc();
-	static u64 last_tsc;
 	u64 rsp, tsc;
 
 	switch (tf->trapno) {
@@ -93,15 +92,21 @@ void trap(struct trapframe *tf)
 		ticks++;
 		tsc = rdtsc();
 		asm volatile("movq %%rsp, %0" : "=r"(rsp));
-		//		if (ticks % 10 == 0)
-		//			cprintf("timer: ticks=%d, rsp=%p, tsc=%l, tscint=%l, curproc=%s\n",
-		//				ticks, rsp, tsc, tsc - last_tsc, curproc->name);
+#ifdef DEBUG_TICK
+		{
+			static u64 last_tsc;
+			if (ticks % CONFIG_TICK_INTERVAL == 0)
+				cprintf("timer: ticks=%d, rsp=%p, tsc=%l, tscint=%l, curproc=%s\n",
+					ticks, rsp, tsc, tsc - last_tsc,
+					curproc->name);
+			last_tsc = tsc;
+		}
+#endif
 		for (int i = 0; i < nproc; i++)
 			if (procs[i].state == SLEEPING)
 				if (--procs[i].sleeprem == 0) {
 					procs[i].state = RUNNABLE;
 				}
-		last_tsc = tsc;
 		lapiceoi();
 		break;
 	default:
