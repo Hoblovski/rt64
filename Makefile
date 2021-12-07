@@ -32,7 +32,6 @@ OBJS := \
 	$(KOBJPREFIX)/app.o\
 	$(KOBJPREFIX)/minctest.o\
 
-
 CC = gcc
 AS = gas
 LD = ld
@@ -43,13 +42,16 @@ QEMU ?= qemu-system-x86_64
 
 OPTFLAGS ?= -O0
 X64CFLAGS = -m64 -mcmodel=kernel -mtls-direct-seg-refs -mno-red-zone
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -MD -ggdb -fno-omit-frame-pointer
+CFLAGS ?= -MMD
+CFLAGS += -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -MD -ggdb -fno-omit-frame-pointer
 CFLAGS += -ffreestanding -fno-common -nostdlib -I$(INCLUDEPATH) -gdwarf-2 $(X64CFLAGS) $(OPTFLAGS)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -fno-pic -gdwarf-2 -Wa,-divide -I$(INCLUDEPATH) $(X64CFLAGS)
 LDFLAGS = -m elf_x86_64 -nodefaultlibs
 
 all: $(XV6IMG)
+
+-include $(OBJS:.o=.d)
 
 # kernel object files
 $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.c
