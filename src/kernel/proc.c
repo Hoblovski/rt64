@@ -120,10 +120,15 @@ void exit(void)
 	cli();
 	curproc->state = EXITED;
 	sched();
+	panic("proc: exit unreachable");
 }
 
 void sleep(int nticks)
 {
+	if (nticks < 0)
+		panic("cannot sleep %d ticks", nticks);
+	if (nticks == 0)
+		return;
 	ASSERT(curproc->state == RUNNING);
 	cli(); // will sti in idle
 	curproc->state = SLEEPING; // must be after cli
