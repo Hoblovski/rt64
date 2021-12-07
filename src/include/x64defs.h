@@ -130,6 +130,8 @@
 #define IRQ_ERROR 19
 #define IRQ_SPURIOUS 31
 
+#include "syscall.h"
+
 // LAPIC and IOAPIC
 #define DEFAULT_LAPIC_PADDR 0xFEE00000
 #define DEFAULT_IOAPIC_PADDR 0xFEC00000

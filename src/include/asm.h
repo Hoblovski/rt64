@@ -2,6 +2,7 @@
 // included by rt64 assembly files
 
 #include "x64defs.h"
+#include "syscall.h"
 
 // assembler macros to create x86 segments
 #define SEG_NULLASM                                                            \

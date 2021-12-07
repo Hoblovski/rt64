@@ -13,6 +13,9 @@ int main(void)
 	extern void *minctestmain(void *arg);
 	spawn("masterthread", minctestmain, NULL);
 
+	extern void *uhello(void *arg);
+	cprintf("syscall from kernel: %d\n", uhello("yes"));
+
 	idlemain();
 }
 

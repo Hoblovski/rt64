@@ -45,6 +45,9 @@ void paginginit_ap(void);
 void trapinit();
 extern __thread struct percpu *curcpu;
 extern int ticks;
+isize syscall(isize num, usize a0, usize a1, usize a2, usize a3, usize a4,
+	      usize a5);
+isize sys_print(const char *a0);
 
 // ======== switch.S
 /*

@@ -110,8 +110,29 @@ void trap(struct trapframe *tf)
 				}
 		lapiceoi();
 		break;
+	case T_SYSCALL:
+		tf->rax = syscall(tf->rax, tf->rdi, tf->rsi, tf->rdx, tf->rcx,
+				  tf->r8, tf->r9);
+		break;
 	default:
 		panic("unexpected trap %d from cpu %d rip %p (cr2=0x%x)\n",
 		      tf->trapno, curcpu->index, tf->rip, rcr2());
 	}
+}
+
+isize syscall(isize num, usize a0, usize a1, usize a2, usize a3, usize a4,
+	      usize a5)
+{
+	switch (num) {
+	case SYS_print:
+		return sys_print((const char *)a0);
+	default:
+		return -1;
+	}
+}
+
+isize sys_print(const char *a0)
+{
+	cprintf("%s", a0);
+	return 0;
 }

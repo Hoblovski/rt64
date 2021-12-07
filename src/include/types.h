@@ -121,9 +121,10 @@ struct proc {
 	// Remaining ticks to sleep, only valid if self.state == SLEEPING
 	int sleeprem;
 
-	// This is actually used for return to child...
+	// This is actually used for return to user...
 	// So when it's kernel only, we do not need it?
 	struct trapframe *tf;
+
 	struct context ctx;
 	void *kstack; // lowest byte of kernel stack
 };
