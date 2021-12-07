@@ -1,51 +1,38 @@
 #include "rt64.h"
 
 static u64 min, max, sum, act, cycles;
-static int prev_sleep_ticks, prev_sleep_tsc;
 
-static inline void sleepto(u64 tsc)
+static void updatestats(u64 diff)
 {
-	u64 remtsc = tsc - rdtsc();
-	prev_sleep_tsc = remtsc;
-	u64 remlapic = TSC_TO_LAPIC(remtsc);
-	remlapic -= lapictimercnt();
-	u64 remtick = (remlapic + LAPIC_TIMER_PERIOD - 1) / LAPIC_TIMER_PERIOD;
-	prev_sleep_ticks = remtick;
-	sleep(remtick);
+	if (diff < min)
+		min = diff;
+	if (diff > max)
+		max = diff;
+	sum += diff;
+	act = diff;
+	cycles++;
 }
 
-#define TSC_INTERVAL 52000000 // 20ms
+#define LAPIC_SLEEP_TICKS 1
 static void *timerthread(void *_arg)
 {
 	min = 1000000;
 	max = 0;
 	sum = 0;
 	cycles = 0;
+	sleep(1);
 
-	u64 now = rdtsc();
-	u64 next = now + TSC_INTERVAL;
+	u64 lastticks = ticks;
+
 	while (1) {
-		// sleepto(next);
-		now = rdtsc();
+		sleep(LAPIC_SLEEP_TICKS);
+		u64 nowcct = lapictimercnt();
+		u64 nowticks = ticks;
+		ASSERT(nowticks == lastticks + LAPIC_SLEEP_TICKS);
+		lastticks = nowticks;
+		u64 nowrem = LAPIC_TIMER_PERIOD - nowcct;
 
-		if (now <= next)
-			panic("now=%l, next=%l, diff=%l\n"
-			      "prev_sleep_ticks=%l\n"
-			      "prev_sleep_tsc=%l\n",
-			      now, next, now - next, prev_sleep_ticks,
-			      prev_sleep_tsc);
-
-		u64 diff = now - next;
-		if (diff < min)
-			min = diff;
-		if (diff > max)
-			max = diff;
-		sum += diff;
-		act = diff;
-		cycles++;
-
-		while (next <= now)
-			next += TSC_INTERVAL;
+		updatestats(nowrem);
 	}
 }
 
@@ -66,6 +53,7 @@ void measure_sleep_tsc(void)
 			l = 0;
 		}
 	}
+#undef N
 }
 
 int minctestmain()
@@ -76,7 +64,7 @@ int minctestmain()
 		sleep(10);
 
 	while (1) {
-		char *fmt = "C:%7l Min:%7l Act:%5l Avg:%5l Max:%8l";
+		char *fmt = "C:%7l Min:%7l Act:%5l Avg:%5l Max:%8l\n";
 		cprintf(fmt, cycles, min, act, sum / cycles, max);
 
 		sleep(10);
