@@ -2,7 +2,7 @@
 KERNPREFIX = src/kernel
 KLIBPREFIX = src/klib
 KAPPPREFIX = src/kapp
-USERPREFIX = src/user
+UAPPPREFIX = src/uapp
 ULIBPREFIX = src/ulib
 TOOLSPREFIX = src/tools
 INCLUDEPATH = src/include
@@ -32,6 +32,8 @@ OBJS := \
 	$(KOBJPREFIX)/app.o\
 	$(KOBJPREFIX)/minctest.o\
 	$(KOBJPREFIX)/kalloc.o\
+	$(UOBJPREFIX)/syscall.o\
+	$(UOBJPREFIX)/uhello.o\
 
 CC = gcc
 AS = gas
@@ -75,10 +77,25 @@ $(KOBJPREFIX)/%.i: $(KERNPREFIX)/%.c
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(CFLAGS) -E -o $@ $<
 
+# user object files
+$(UOBJPREFIX)/%.o: $(UAPPPREFIX)/%.c
+	@mkdir -p $(UOBJPREFIX)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(UOBJPREFIX)/%.o: $(ULIBPREFIX)/%.c
+	@mkdir -p $(UOBJPREFIX)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(UOBJPREFIX)/%.o: $(ULIBPREFIX)/%.S
+	@mkdir -p $(UOBJPREFIX)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# misc generated
+## vectors
 $(KERNPREFIX)/vectors.S: $(TOOLSPREFIX)/vectors.py
 	python3 $< > $(KERNPREFIX)/vectors.S
 
-# bootblock
+## bootblock
 $(OUTPREFIX)/bootblock: $(KERNPREFIX)/bootasm.S $(KERNPREFIX)/bootmain.c
 	@mkdir -p $(OUTPREFIX)
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -O -o $(OUTPREFIX)/bootmain.o -c $(KERNPREFIX)/bootmain.c
@@ -116,7 +133,7 @@ format:
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
 CPUS ?= 1
-QEMUOPTS = -net none -hda $(XV6IMG) -smp $(CPUS) -m 1G $(QEMUEXTRA)
+QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 1G $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
