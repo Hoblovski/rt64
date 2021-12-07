@@ -30,6 +30,8 @@ OBJS := \
 	$(KOBJPREFIX)/proc.o\
 	$(KOBJPREFIX)/kernctest.o\
 	$(KOBJPREFIX)/app.o\
+	$(KOBJPREFIX)/minctest.o\
+
 
 CC = gcc
 AS = gas

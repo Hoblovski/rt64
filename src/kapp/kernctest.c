@@ -44,6 +44,7 @@ static int shutdown = 0;
 
 u64 old_now;
 u64 slnext;
+u64 sleep_lapic;
 int sleep_ticks;
 
 static void *timerthread(void *param)
@@ -144,7 +145,7 @@ void *ctestmain(void *arg)
 		par->policy = SCHED_OTHER;
 #endif
 
-		stat->min = 10000;
+		stat->min = 100000;
 		stat->max = 0;
 		stat->sum = 0;
 		stat->cycles = 0;

@@ -34,10 +34,13 @@ static inline long tsdelta(const struct timespec *t1, const struct timespec *t2)
 	if (d <= 0) {
 		extern u64 old_now;
 		extern u64 slnext;
+		extern u64 sleep_lapic;
 		extern int sleep_ticks;
 		panic("invalid tsdelta %l = %l - %l\n"
-		      "old_now = %l, slnext = %l, sleep_ticks = %d\n",
-		      d, t2->tsc, t1->tsc, old_now, slnext, sleep_ticks);
+		      "old_now = %l, slnext = %l, sleep_ticks = %d\n"
+		      "sleep_lapic = %l\n",
+		      d, t1->tsc, t2->tsc, old_now, slnext, sleep_ticks,
+		      sleep_lapic);
 	}
 	d = (d + 2600 - 1) / 2600; // ceiling div
 	ASSERT(d != 0);
@@ -56,19 +59,20 @@ static inline void tsgettime(struct timespec *d)
 
 static inline void tssleepto(struct timespec *d)
 {
+	extern int sleep_ticks;
+	extern u64 sleep_lapic;
 	// sleep this many TSC
 	u64 rem = d->tsc - rdtsc();
 	// sleep this many lapic timer counts
 	rem = TSC_TO_LAPIC(rem);
 	// one shot: how many remaining;
 	rem -= lapictimercnt();
+	rem = ((i64)rem < 0) ? 1 : rem;
+	sleep_lapic = rem;
 	// ceil to how many ticks to sleep
 	rem = (rem + LAPIC_TIMER_PERIOD - 1) / LAPIC_TIMER_PERIOD;
-	//DEBUG cprintf("sleeping: %d\n", rem);
-	rem += 2;
-	extern int sleep_ticks;
+	// rem += 2;
 	sleep_ticks = rem;
-	// cprintf("@ %d\n", sleep_ticks);
 	sleep(rem);
 }
 

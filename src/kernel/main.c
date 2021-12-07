@@ -9,8 +9,8 @@ int main(void)
 	lapicinit();
 	trapinit();
 	procinit();
-	extern void *ctestmain(void *arg);
-	spawn("master", ctestmain, NULL);
+	extern void *minctestmain(void *arg);
+	spawn("masterthread", minctestmain, NULL);
 
 	idlemain();
 }
