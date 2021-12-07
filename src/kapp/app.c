@@ -1,6 +1,6 @@
 #include "rt64.h"
 
-static void *kthread1(void *arg)
+__attribute__((unused)) void *kthread1(void *arg)
 {
 	cprintf("  kthread1: initarg=%d\n", (u64)arg);
 	for (int j = 0; j < 2; j++) {
@@ -10,7 +10,7 @@ static void *kthread1(void *arg)
 	exit();
 }
 
-static void *kthread2(void *arg)
+__attribute__((unused)) void *kthread2(void *arg)
 {
 	cprintf("  kthread2: initarg=%d\n", (u64)arg);
 	for (int j = 0; j < 2; j++) {
@@ -21,7 +21,7 @@ static void *kthread2(void *arg)
 	exit();
 }
 
-static void *kthread3(void *arg)
+__attribute__((unused)) void *kthread3(void *arg)
 {
 	extern u64 test_tsc;
 	u64 tsc;

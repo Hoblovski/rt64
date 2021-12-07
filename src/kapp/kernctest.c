@@ -50,6 +50,7 @@ int sleep_ticks;
 static void *timerthread(void *param)
 {
 	int err;
+	(void)err;
 
 	// init
 	struct thread_param *par = param;
@@ -130,6 +131,7 @@ static void print_stat(struct thread_param *par, struct thread_stat *stat)
 void *ctestmain(void *arg)
 {
 	int err;
+	(void)err;
 
 #ifndef MINIMAL
 	signal(SIGINT, sighand);

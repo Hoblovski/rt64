@@ -83,6 +83,7 @@
 #define PDPT_IDX(va) (((va) >> PDPT_SHIFT) & (PG_NENT - 1))
 #define PD_IDX(va) (((va) >> PD_SHIFT) & (PG_NENT - 1))
 #define PT_IDX(va) (((va) >> PT_SHIFT) & (PG_NENT - 1))
+#define PE_ADDR(ent) ((ent) & (~((1 << 12) - 1)))
 
 // Page table flags
 #define PF_P 1 // Present

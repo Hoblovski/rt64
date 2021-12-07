@@ -78,3 +78,8 @@ void exit(void) __attribute__((noreturn));
  * Should we use TSC for better resolution?
  */
 void sleep(int nticks);
+
+// ======== kalloc.c
+void *kalloc(void);
+void kfree(void *frame);
+void kallocinit(void);

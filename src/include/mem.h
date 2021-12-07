@@ -17,9 +17,9 @@
 // Only for high-address devices like *APIC. Returns a pointer
 #define IO2V(a) (((void *)((usize)(a))) - DEVSPACE + DEVBASE)
 
-// Whether a is aligned. pgsize must be power of 2
-#define ALIGNED(a, pgsize) (!((a) & ((pgsize)-1)))
-// Align a down. pgsize must be power of 2
-#define ALIGN(a, pgsize) ((a) & (~((pgsize)-1)))
+// Whether pointer a is aligned. pgsize must be power of 2
+#define ALIGNED(a, pgsize) (!(((u64)(a)) & ((pgsize)-1)))
+// Align pointer a down. pgsize must be power of 2
+#define ALIGN(a, pgsize) ((void *)(((u64)(a)) & (~((pgsize)-1))))
 
 #define ATTR_PAGEALIGN __attribute__((__aligned__(PG_SZ4K)));

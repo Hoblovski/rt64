@@ -4,6 +4,7 @@
 int main(void)
 {
 	uartearlyinit();
+	kallocinit();
 	paginginit_bsp();
 	acpiinit();
 	lapicinit();

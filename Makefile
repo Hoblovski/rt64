@@ -31,6 +31,7 @@ OBJS := \
 	$(KOBJPREFIX)/kernctest.o\
 	$(KOBJPREFIX)/app.o\
 	$(KOBJPREFIX)/minctest.o\
+	$(KOBJPREFIX)/kalloc.o\
 
 CC = gcc
 AS = gas
@@ -115,7 +116,7 @@ format:
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
 CPUS ?= 1
-QEMUOPTS = -net none -hda $(XV6IMG) -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -net none -hda $(XV6IMG) -smp $(CPUS) -m 1G $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)

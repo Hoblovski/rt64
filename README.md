@@ -24,6 +24,8 @@ FFFF_FFFF_8000_0000 ... FFFF_FFFF_BFFF_FFFF (+1G)	->	0000_0000_0000_0000 ... 000
 	by a single 1G huge page
 ```
 
+As we have 1G max phys memory, so they're all mapped by boot code.
+
 With PML4 page table at PA 0x1000.
 
 # BUGS
