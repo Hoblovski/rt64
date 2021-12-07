@@ -1,6 +1,7 @@
 # KERNEL ================================
 KERNPREFIX = src/kernel
 KLIBPREFIX = src/klib
+KAPPPREFIX = src/kapp
 USERPREFIX = src/user
 ULIBPREFIX = src/ulib
 TOOLSPREFIX = src/tools
@@ -26,7 +27,9 @@ OBJS := \
 	$(KOBJPREFIX)/vectors.o\
 	$(KOBJPREFIX)/trapasm.o\
 	$(KOBJPREFIX)/switch.o\
-	$(KOBJPREFIX)/proc.o
+	$(KOBJPREFIX)/proc.o\
+	$(KOBJPREFIX)/kernctest.o\
+	$(KOBJPREFIX)/app.o\
 
 CC = gcc
 AS = gas
@@ -52,6 +55,10 @@ $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(KOBJPREFIX)/%.o: $(KLIBPREFIX)/%.c
+	@mkdir -p $(KOBJPREFIX)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(KOBJPREFIX)/%.o: $(KAPPPREFIX)/%.c
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
