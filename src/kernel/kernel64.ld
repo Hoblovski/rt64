@@ -27,6 +27,16 @@ SECTIONS
 
 	. = ALIGN(0x1000);
 
+	PROVIDE(ubegin = .);
+	. = ALIGN(0x1000);
+	.user : {
+		*(.user.text)
+		*(.user.rodata)
+		*(.user.bss)
+		*(.user.data)
+	}
+	. = ALIGN(0x1000);
+	PROVIDE(uend = .);
 
 	/* Conventionally, Unix linkers provide pseudo-symbols
 	 * etext, edata, and end, at the end of the text, data, and bss.
@@ -44,6 +54,8 @@ SECTIONS
 	. = ALIGN(0x1000);
 
 	PROVIDE(edata = .);
+
+	/* why cannot put .user here? */
 
 	.bss : {
 		*(.bss)

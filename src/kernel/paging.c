@@ -95,7 +95,6 @@ static void paging_map(u64 *pml4, usize va, usize pa, usize sz, usize flags)
 	}
 }
 
-// XXX: make less cryptic
 // Switch from bootloader's entrypml4 to kernel's pml4.
 void paginginit_bsp(void)
 {

@@ -1,5 +1,0 @@
-make panic accept varargs
-
-make .o depend on header
-
-principled mapping rather than what's in paginginit
