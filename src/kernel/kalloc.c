@@ -20,6 +20,11 @@ static struct {
 	.freelist = NULL
 };
 
+int nfreepages(void)
+{
+	return allocator.nfreepages;
+}
+
 void kfree(void *frame)
 {
 	ASSERT(ALIGNED(frame, PG_SZ4K));
@@ -37,6 +42,7 @@ void *kalloc(void)
 	struct freeframe *f = allocator.freelist;
 	allocator.freelist = allocator.freelist->next;
 	allocator.nfreepages--;
+	memset(f, 0, PG_SZ4K);
 	return (void *)f;
 }
 
@@ -44,7 +50,7 @@ void kallocinit(void)
 {
 	void *from = end, *to = P2V((void *)MAX_PHYS_MEM);
 	cprintf("%x %x\n", from, to);
-	for (void *it = from; it < to; it += PG_SZ4K)
+	for (void *it = to - PG_SZ4K; it >= from; it -= PG_SZ4K)
 		kfree(it);
 	cprintf("kalloc: inited %d free pages [%x - %x]\n",
 		allocator.nfreepages, from, to);

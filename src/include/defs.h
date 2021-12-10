@@ -87,3 +87,4 @@ void sleep(int nticks);
 void *kalloc(void);
 void kfree(void *frame);
 void kallocinit(void);
+int nfreepages(void);
