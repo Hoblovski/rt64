@@ -127,13 +127,16 @@ clean:
 format:
 	find src -name "*.[ch]" | xargs clang-format -i
 
+addr2line:
+	@src/tools/decodepc
+
 # QEMU and GDB ================================
 
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
 CPUS ?= 1
-QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 1G $(QEMUEXTRA)
+QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 1G -no-reboot $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)

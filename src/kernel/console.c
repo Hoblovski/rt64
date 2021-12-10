@@ -137,15 +137,40 @@ void cprintf(char *fmt, ...)
 	va_end(ap);
 }
 
-void panic(char *fmt, ...)
+__attribute__((noreturn)) static void vpanic(char *fmt, va_list ap)
 {
-	cli();
 	cprintf("======== panic ========\n");
-	va_list ap;
-	va_start(ap, fmt);
 	vcprintf(fmt, ap);
-	va_end(ap);
+	cprintf("pc backtrace:\n");
+	usize *rbp;
+	asm volatile("mov %%rbp, %0" : "=r"(rbp));
+	while (rbp[0] != 0) {
+		cprintf("  %p\n", rbp[1]);
+		rbp = (usize *)rbp[0];
+	}
+
 	panicked = 1;
 	for (;;)
 		;
+}
+
+void panic(char *fmt, ...)
+{
+	cli();
+	va_list ap;
+	va_start(ap, fmt);
+	vpanic(fmt, ap);
+	va_end(ap);
+}
+
+void assert(int cond, char *fmt, ...)
+{
+	if (cond)
+		return;
+	cli();
+
+	va_list ap;
+	va_start(ap, fmt);
+	vpanic(fmt, ap);
+	va_end(ap);
 }

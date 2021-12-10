@@ -20,6 +20,7 @@ void uartputc(int c);
 // ======== console.c
 void cprintf(char *fmt, ...);
 void panic(char *fmt, ...) __attribute__((noreturn));
+void assert(int cond, char *fmt, ...);
 
 // ======== acpi.c
 void acpiinit(void);

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+while read pc; do
+	addr2line -e out/kernel.elf $pc
+done
