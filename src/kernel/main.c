@@ -7,17 +7,16 @@ int main(void)
 	kallocinit();
 	paginginit_bsp();
 	acpiinit();
+
 	lapicinit();
 	trapinit();
 	procinit();
-	extern void *minctestmain(void *arg);
-	spawn("masterthread", minctestmain, NULL);
 
+	uvm_init(); // XXX: not here
 	extern void *uhello(void *arg);
-	cprintf("uhello is %p\n", uhello);
-	extern char ubegin[], uend[];
-	cprintf("user is %p %p\n", ubegin, uend);
-	cprintf("syscall from kernel: %d\n", uhello("yes"));
+	extern void *minctestmain(void *arg);
+	spawnuser("uhello", uhello, NULL);
+	//spawn("master", minctestmain, NULL);
 
 	idlemain();
 }

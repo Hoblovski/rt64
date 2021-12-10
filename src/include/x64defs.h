@@ -46,6 +46,8 @@
 #define SEG_UDATA 5 // user data+stack
 #define SEG_TSS 6 // this process's task state
 
+#define DPL_USER 0x3 // User DPL
+
 // Application segment type bits
 #define STA_X 0x8 // Executable segment
 #define STA_E 0x4 // Expand down (non-executable segments)
@@ -84,6 +86,7 @@
 #define PD_IDX(va) (((va) >> PD_SHIFT) & (PG_NENT - 1))
 #define PT_IDX(va) (((va) >> PT_SHIFT) & (PG_NENT - 1))
 #define PE_ADDR(ent) ((ent) & (~((1 << 12) - 1)))
+#define PE_FLAGS(ent) ((ent) & ((1 << 12) - 1))
 
 // Page table flags
 #define PF_P 1 // Present

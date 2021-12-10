@@ -136,7 +136,7 @@ addr2line:
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
 CPUS ?= 1
-QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 1G -no-reboot $(QEMUEXTRA)
+QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 16M -no-reboot $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)

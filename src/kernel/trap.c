@@ -18,6 +18,17 @@ static void mkgate(u32 n, void *kva, u32 pl, u32 trap)
 	idt[n + 3] = 0;
 }
 
+void set_task_kstack(void)
+{
+	ASSERT(curproc !=
+	       curcpu->idleproc); // idleproc->kstack do not mean anything
+
+	u32 *tss = (void *)curcpu->tls + 1024;
+	usize rsp = (usize)curproc->kstack + KSTACK_SZ;
+	tss[1] = rsp;
+	tss[2] = rsp >> 32;
+}
+
 // TLS holds GDT and TSS and __thread data. One page for each cpu.
 static u8 tls[MAX_CPU][PG_SZ4K] ATTR_PAGEALIGN;
 

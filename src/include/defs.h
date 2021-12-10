@@ -2,6 +2,8 @@
 
 // ======== kernel.ld
 extern char end[];
+extern char ubegin[];
+extern char uend[];
 
 // ======== vectors.S
 extern void *vectors[];
@@ -41,9 +43,20 @@ u32 lapictimercnt(void);
 // ======== paging.c
 void paginginit_bsp(void);
 void paginginit_ap(void);
+void uvm_init(void);
+extern pt_t kpml4;
+extern pt_t upml4;
+
+// ======== trapasm.S
+void trapret(void);
 
 // ======== trap.c
 void trapinit();
+/*
+ * For x86, set the kstack in TSS so processor knows which kstack to use upon a
+ * trap.
+ */
+void set_task_kstack(void);
 extern __thread struct percpu *curcpu;
 extern int ticks;
 isize syscall(isize num, usize a0, usize a1, usize a2, usize a3, usize a4,
@@ -63,14 +76,19 @@ extern int nproc;
 void idlemain(void) __attribute__((noreturn));
 void procinit(void);
 /*
- * Spawn a function.
- * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)).
+ * Spawn a kernel thread.
+ * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
  */
 struct proc *spawn(const char *name, void *(*func)(void *), void *initarg);
 /*
+ * Spawn a user thread.
+ * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
+ */
+struct proc *spawnuser(const char *name, void *(*func)(void *), void *initarg)
+	/*
  * Volutarily give up execution for current thread, but remain runnable.
  */
-void yield(void);
+	void yield(void);
 /*
  * Terminate execution of current thread.
  */

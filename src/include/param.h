@@ -6,8 +6,8 @@
 #define XLENB 8
 #define MAX_CPU 8
 
-#define MAX_PHYS_MEM 0x40000000 // 1G
-#define MAX_PROC 64
+#define MAX_PHYS_MEM 0x1600000 // 16M
+#define MAX_PROC 8
 #define KSTACK_PAGES 2
 
 // From experience, a period of 1 000 000 000 is equal to 1 second on qemu.
@@ -19,3 +19,6 @@
 // Convert TSC interval to LAPIC interval:	tsc * (LAPIC_FREQ / TSC_FREQ)
 // in general it could overflow, but in our case it wont
 #define TSC_TO_LAPIC(i) ((i)*5 / 13)
+
+// Below are computed, do not modify
+#define KSTACK_SZ (PG_SZ4K * KSTACK_PAGES)
