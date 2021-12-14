@@ -1,10 +1,7 @@
 #pragma once
 
-#include "types.h"
-#include "x64.h"
-
 // standard
-#define NULL 0
+#define NULL ((void*) 0)
 
 // string.c
 void *memset(void *dst, int c, usize n);

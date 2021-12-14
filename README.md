@@ -46,6 +46,8 @@ src
 		#include "rt64.h"
 	and user c files solely
 		#include "rt64u.h"
+	and asm files solely
+		#include "rt64asm.h"
 	all others should be indirectly included
 
 ├── kernel

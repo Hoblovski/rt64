@@ -22,7 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-#include "asm.h"
+#include "rt64asm.h"
 
 #define mboot_magic 0x1badb002
 #define mboot_flags 0x00010000

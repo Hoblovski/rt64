@@ -1,6 +1,9 @@
+/*
+ * This should be the sole file included by all rt64 user c sources.
+ */
 #pragma once
 
-#include "syscall.h"
+#include "syscallconsts.h"
 
 #define NULL ((void *)0)
 

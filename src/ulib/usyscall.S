@@ -1,4 +1,4 @@
-#include "asm.h"
+#include "rt64asm.h"
 
 #define SYSCALL(name)                                                          \
 .globl usys ## name ;                                                          \

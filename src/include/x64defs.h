@@ -1,140 +1,182 @@
 #pragma once
-// X64 platform encodings
+// Routines to let C code use special x86 instructions.
 
-// flags register
-#define FL_CF 0x00000001 // Carry Flag
-#define FL_PF 0x00000004 // Parity Flag
-#define FL_AF 0x00000010 // Auxiliary carry Flag
-#define FL_ZF 0x00000040 // Zero Flag
-#define FL_SF 0x00000080 // Sign Flag
-#define FL_TF 0x00000100 // Trap Flag
-#define FL_IF 0x00000200 // Interrupt Enable
-#define FL_DF 0x00000400 // Direction Flag
-#define FL_OF 0x00000800 // Overflow Flag
-#define FL_IOPL_MASK 0x00003000 // I/O Privilege Level bitmask
-#define FL_IOPL_0 0x00000000 //   IOPL == 0
-#define FL_IOPL_1 0x00001000 //   IOPL == 1
-#define FL_IOPL_2 0x00002000 //   IOPL == 2
-#define FL_IOPL_3 0x00003000 //   IOPL == 3
-#define FL_NT 0x00004000 // Nested Task
-#define FL_RF 0x00010000 // Resume Flag
-#define FL_VM 0x00020000 // Virtual 8086 mode
-#define FL_AC 0x00040000 // Alignment Check
-#define FL_VIF 0x00080000 // Virtual Interrupt Flag
-#define FL_VIP 0x00100000 // Virtual Interrupt Pending
-#define FL_ID 0x00200000 // ID flag
+static inline u8 inb(u16 port)
+{
+	u8 data;
 
-// Control Register flags
-#define CR0_PE 0x00000001 // Protection Enable
-#define CR0_MP 0x00000002 // Monitor coProcessor
-#define CR0_EM 0x00000004 // Emulation
-#define CR0_TS 0x00000008 // Task Switched
-#define CR0_ET 0x00000010 // Extension Type
-#define CR0_NE 0x00000020 // Numeric Errror
-#define CR0_WP 0x00010000 // Write Protect
-#define CR0_AM 0x00040000 // Alignment Mask
-#define CR0_NW 0x20000000 // Not Writethrough
-#define CR0_CD 0x40000000 // Cache Disable
-#define CR0_PG 0x80000000 // Paging
-#define CR4_PSE 0x00000010 // Page size extension
+	asm volatile("in %1,%0" : "=a"(data) : "d"(port));
+	return data;
+}
 
-// Segment selectors
-#define SEG_KCODE 1 // kernel code
-#define SEG_KDATA 2 // kernel data+stack
-#define SEG_KCPU 3 // kernel per-cpu data
-#define SEG_UCODE 4 // user code
-#define SEG_UDATA 5 // user data+stack
-#define SEG_TSS 6 // this process's task state
+static inline void insl(int port, void *addr, int cnt)
+{
+	asm volatile("cld; rep insl"
+		     : "=D"(addr), "=c"(cnt)
+		     : "d"(port), "0"(addr), "1"(cnt)
+		     : "memory", "cc");
+}
 
-#define DPL_USER 0x3 // User DPL
+static inline void outb(u16 port, u8 data)
+{
+	asm volatile("out %0,%1" : : "a"(data), "d"(port));
+}
 
-// Application segment type bits
-#define STA_X 0x8 // Executable segment
-#define STA_E 0x4 // Expand down (non-executable segments)
-#define STA_C 0x4 // Conforming code segment (executable only)
-#define STA_W 0x2 // Writeable (non-executable segments)
-#define STA_R 0x2 // Readable (executable segments)
-#define STA_A 0x1 // Accessed
+static inline void outw(u16 port, u16 data)
+{
+	asm volatile("out %0,%1" : : "a"(data), "d"(port));
+}
 
-// System segment type bits
-#define STS_T16A 0x1 // Available 16-bit TSS
-#define STS_LDT 0x2 // Local Descriptor Table
-#define STS_T16B 0x3 // Busy 16-bit TSS
-#define STS_CG16 0x4 // 16-bit Call Gate
-#define STS_TG 0x5 // Task Gate / Coum Transmitions
-#define STS_IG16 0x6 // 16-bit Interrupt Gate
-#define STS_TG16 0x7 // 16-bit Trap Gate
-#define STS_T32A 0x9 // Available 32-bit TSS
-#define STS_T32B 0xB // Busy 32-bit TSS
-#define STS_CG32 0xC // 32-bit Call Gate
-#define STS_IG32 0xE // 32-bit Interrupt Gate
-#define STS_TG32 0xF // 32-bit Trap Gate
+static inline void outsl(int port, const void *addr, int cnt)
+{
+	asm volatile("cld; rep outsl"
+		     : "=S"(addr), "=c"(cnt)
+		     : "d"(port), "0"(addr), "1"(cnt)
+		     : "cc");
+}
 
-// Paging
-#define PG_SZ4K 0x1000 // Size of a 4K page in bytes
-#define PG_SZ2M 0x200000 // Size of a 2M huge page in bytes
-#define PG_SZ1G 0x40000000 // Size of a 1G huge page in bytes
-#define PG_NENT 512 // Number of entries in a page table
+static inline void stosb(void *addr, int data, int cnt)
+{
+	asm volatile("cld; rep stosb"
+		     : "=D"(addr), "=c"(cnt)
+		     : "0"(addr), "1"(cnt), "a"(data)
+		     : "memory", "cc");
+}
 
-// Shifts
-#define PT_SHIFT 12
-#define PD_SHIFT 21
-#define PDPT_SHIFT 30
-#define PML4_SHIFT 39
-#define PML4_IDX(va) (((va) >> PML4_SHIFT) & (PG_NENT - 1))
-#define PDPT_IDX(va) (((va) >> PDPT_SHIFT) & (PG_NENT - 1))
-#define PD_IDX(va) (((va) >> PD_SHIFT) & (PG_NENT - 1))
-#define PT_IDX(va) (((va) >> PT_SHIFT) & (PG_NENT - 1))
-#define PE_ADDR(ent) ((ent) & (~((1 << 12) - 1)))
-#define PE_FLAGS(ent) ((ent) & ((1 << 12) - 1))
+static inline void stosl(void *addr, int data, int cnt)
+{
+	asm volatile("cld; rep stosl"
+		     : "=D"(addr), "=c"(cnt)
+		     : "0"(addr), "1"(cnt), "a"(data)
+		     : "memory", "cc");
+}
 
-// Page table flags
-#define PF_P 1 // Present
-#define PF_W 2 // Writable
-#define PF_WP 3 // Writable and present
-#define PF_U 4 // User accessible
-#define PF_PWT 8 // Write through
-#define PF_PCD 16 // Cache disable
-#define PF_PS 128 // Huge page
+struct segdesc;
 
-// x86 trap and interrupt constants.
-#define T_DIVIDE 0 // divide error
-#define T_DEBUG 1 // debug exception
-#define T_NMI 2 // non-maskable interrupt
-#define T_BRKPT 3 // breakpoint
-#define T_OFLOW 4 // overflow
-#define T_BOUND 5 // bounds check
-#define T_ILLOP 6 // illegal opcode
-#define T_DEVICE 7 // device not available
-#define T_DBLFLT 8 // double fault
-// #define T_COPROC      9      // reserved (not used since 486)
-#define T_TSS 10 // invalid task switch segment
-#define T_SEGNP 11 // segment not present
-#define T_STACK 12 // stack exception
-#define T_GPFLT 13 // general protection fault
-#define T_PGFLT 14 // page fault
-// #define T_RES        15      // reserved
-#define T_FPERR 16 // floating point error
-#define T_ALIGN 17 // aligment check
-#define T_MCHK 18 // machine check
-#define T_SIMDERR 19 // SIMD floating point error
+static inline void lgdt(struct segdesc *p, int size)
+{
+	volatile u16 pd[5];
 
-// These are arbitrarily chosen, but with care not to overlap
-// processor defined exceptions or interrupt vectors.
-#define T_SYSCALL 64 // system call
-#define T_DEFAULT 500 // catchall
+	pd[0] = size - 1;
+	pd[1] = (usize)p;
+	pd[2] = (usize)p >> 16;
+	pd[3] = (usize)p >> 32;
+	pd[4] = (usize)p >> 48;
+	asm volatile("lgdt (%0)" : : "r"(pd));
+}
 
-#define T_IRQ0 32 // IRQ 0 corresponds to int T_IRQ
+struct gatedesc;
 
-#define IRQ_TIMER 0
-#define IRQ_KBD 1
-#define IRQ_COM1 4
-#define IRQ_IDE 14
-#define IRQ_ERROR 19
-#define IRQ_SPURIOUS 31
+static inline void lidt(struct gatedesc *p, int size)
+{
+	volatile u16 pd[5];
 
-#include "syscall.h"
+	pd[0] = size - 1;
+	pd[1] = (usize)p;
+	pd[2] = (usize)p >> 16;
+	pd[3] = (usize)p >> 32;
+	pd[4] = (usize)p >> 48;
+	asm volatile("lidt (%0)" : : "r"(pd));
+}
 
-// LAPIC and IOAPIC
-#define DEFAULT_LAPIC_PADDR 0xFEE00000
-#define DEFAULT_IOAPIC_PADDR 0xFEC00000
+static inline void ltr(u16 sel)
+{
+	asm volatile("ltr %0" : : "r"(sel));
+}
+
+static inline usize readeflags(void)
+{
+	usize eflags;
+	asm volatile("pushf; pop %0" : "=r"(eflags));
+	return eflags;
+}
+
+static inline void loadgs(u16 v)
+{
+	asm volatile("movw %0, %%gs" : : "r"(v));
+}
+
+static inline void cli(void)
+{
+	asm volatile("cli");
+}
+
+static inline void sti(void)
+{
+	asm volatile("sti");
+}
+
+static inline void hlt(void)
+{
+	asm volatile("hlt");
+}
+
+static inline u32 xchg(volatile u32 *addr, usize newval)
+{
+	u32 result;
+
+	// The + in "+m" denotes a read-modify-write operand.
+	asm volatile("lock; xchgl %0, %1"
+		     : "+m"(*addr), "=a"(result)
+		     : "1"(newval)
+		     : "cc");
+	return result;
+}
+
+static inline usize rcr2(void)
+{
+	usize val;
+	asm volatile("mov %%cr2,%0" : "=r"(val));
+	return val;
+}
+
+static inline void lcr3(usize val)
+{
+	asm volatile("mov %0,%%cr3" : : "r"(val));
+}
+
+// As in SDM2, RDTSC is not serializing instruction.
+// When used to test very short time intervals, insert a serializing instr e.g. CPUID.
+static inline u64 rdtsc()
+{
+	u64 eax, edx;
+	__asm__ volatile("rdtsc" : "=a"(eax), "=d"(edx));
+	return (edx << 32) | eax;
+}
+
+// Normal segment
+#define SEG(type, base, lim, dpl)                                              \
+	(struct segdesc)                                                       \
+	{                                                                      \
+		((lim) >> 12) & 0xffff, (u32)(base)&0xffff,                    \
+			((usize)(base) >> 16) & 0xff, type, 1, dpl, 1,         \
+			(usize)(lim) >> 28, 0, 0, 1, 1, (usize)(base) >> 24    \
+	}
+#define SEG16(type, base, lim, dpl)                                            \
+	(struct segdesc)                                                       \
+	{                                                                      \
+		(lim) & 0xffff, (usize)(base)&0xffff,                          \
+			((usize)(base) >> 16) & 0xff, type, 1, dpl, 1,         \
+			(usize)(lim) >> 16, 0, 0, 1, 0, (usize)(base) >> 24    \
+	}
+
+// Set up a normal interrupt/trap gate descriptor.
+// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
+//   interrupt gate clears FL_IF, trap gate leaves FL_IF alone
+// - sel: Code segment selector for interrupt/trap handler
+// - off: Offset in code segment for interrupt/trap handler
+// - dpl: Descriptor Privilege Level -
+//        the privilege level required for software to invoke
+//        this interrupt/trap gate explicitly using an int instruction.
+#define SETGATE(gate, istrap, sel, off, d)                                     \
+	{                                                                      \
+		(gate).off_15_0 = (u32)(off)&0xffff;                           \
+		(gate).cs = (sel);                                             \
+		(gate).args = 0;                                               \
+		(gate).rsv1 = 0;                                               \
+		(gate).type = (istrap) ? STS_TG32 : STS_IG32;                  \
+		(gate).s = 0;                                                  \
+		(gate).dpl = (d);                                              \
+		(gate).p = 1;                                                  \
+		(gate).off_31_16 = (u32)(off) >> 16;                           \
+	}

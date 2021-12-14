@@ -1,8 +1,8 @@
 #pragma once
 // included by rt64 assembly files
 
-#include "x64defs.h"
-#include "syscall.h"
+#include "x64consts.h"
+#include "syscallconsts.h"
 
 // assembler macros to create x86 segments
 #define SEG_NULLASM                                                            \

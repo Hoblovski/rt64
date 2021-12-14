@@ -1,21 +1,22 @@
+/*
+ * This should be the sole file included by all rt64 kernel c sources.
+ */
 #pragma once
-// included by rt64 kernel files
 
-#define STATIC_ASSERT(COND, MSG)                                               \
-	static int static_assertion_##MSG[(COND) ? 1 : -1]                     \
-		__attribute__((unused))
+/* build configurations */
+#include "../../.defs.h"
 
-#define ASSERT(x)                                                              \
-	do {                                                                   \
-		if (!(x)) {                                                    \
-			panic("assert: %s:%d (%s)\n", __FILE__, __LINE__, #x); \
-		}                                                              \
-	} while (0)
+/* utility used in headers */
+#include "common.h"
 
-#include "param.h" // #define's
-#include "types.h" // typedefs and structs, extern variables
-#include "defs.h" // function prototypes, extern variables
-#include "mem.h" // memory layout, manipulation utilities
-#include "x64.h" // platform specific
+/* consts */
+#include "consts.h"
 
+/* types */
+#include "types.h"
+
+/* function declarations / extern variables */
+#include "defs.h"
+
+/* additional consts / types / functions for kernel library */
 #include "klib.h"
