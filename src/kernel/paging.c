@@ -13,14 +13,7 @@ pt_t upml4 = NULL;
 
 static void safe_setent(pt_t pt, usize idx, u64 ent)
 {
-	int x = (!(pt[idx] & PF_P));
-	ASSERT(x);
-	pt[idx] = ent;
-}
-
-static void safe_updent(pt_t pt, usize idx, u64 ent)
-{
-	ASSERT(pt[idx] & PF_P);
+	ASSERT(!(pt[idx] & PF_P));
 	pt[idx] = ent;
 }
 
@@ -46,63 +39,6 @@ static pt_t safe_nextpt_noalloc(pt_t pt, usize idx)
 	return P2V(pa);
 }
 
-static void paging_split(pt_t pt, usize idx, usize pgsz)
-{
-	ASSERT(pt[idx] & PF_P);
-	ASSERT(pt[idx] & PF_PS);
-
-	usize pa = PE_ADDR(pt[idx]), nextpgsz = pgsz / PG_NENT;
-	u64 flags = PE_FLAGS(pt[idx]);
-	if (nextpgsz == PG_SZ4K)
-		flags &= ~PF_PS;
-
-	pt_t nextpt = kalloc();
-	for (int i = 0; i < PG_NENT; i++, pa += nextpgsz) {
-		u64 ent = pa | flags;
-		safe_setent(nextpt, i, ent);
-	}
-	u64 ent = (V2P(nextpt) | flags) & (~PF_PS);
-	safe_setent(pt, idx, ent);
-}
-
-static pt_t safe_nextpt_split(pt_t pt, usize idx, usize pgsz)
-{
-	u64 ent = pt[idx];
-	ASSERT(ent & PF_P);
-	ASSERT(ent & PF_PS);
-	paging_split(pt, idx, pgsz);
-	ent = pt[idx];
-	usize pa = PE_ADDR(ent);
-	return P2V(pa);
-}
-
-/*
- * flags: used in combination with PF_P and PF_PS
- */
-static void paging_map_1G(pt_t pml4, usize va, usize pa, usize flags)
-{
-	ASSERT(ALIGNED(va, PG_SZ1G));
-	ASSERT(ALIGNED(pa, PG_SZ1G));
-
-	pt_t pdpt = safe_nextpt_mayalloc(pml4, PML4_IDX(va));
-	u64 ent = pa | flags | PF_P | PF_PS;
-	safe_setent(pdpt, PDPT_IDX(va), ent);
-}
-
-/*
- * flags: used in combination with PF_P and PF_PS
- */
-static void paging_map_2M(pt_t pml4, usize va, usize pa, usize flags)
-{
-	ASSERT(ALIGNED(va, PG_SZ2M));
-	ASSERT(ALIGNED(pa, PG_SZ2M));
-
-	pt_t pdpt = safe_nextpt_mayalloc(pml4, PML4_IDX(va));
-	pt_t pd = safe_nextpt_mayalloc(pdpt, PDPT_IDX(va));
-	u64 ent = pa | flags | PF_P | PF_PS;
-	safe_setent(pd, PD_IDX(va), ent);
-}
-
 static void paging_map_4K(pt_t pml4, usize va, usize pa, usize flags)
 {
 	ASSERT(ALIGNED(va, PG_SZ4K));
@@ -113,8 +49,6 @@ static void paging_map_4K(pt_t pml4, usize va, usize pa, usize flags)
 	pt_t pt = safe_nextpt_mayalloc(pd, PD_IDX(va));
 	u64 ent = pa | flags | PF_P;
 
-	//safe_setent(pt, PT_IDX(va), ent);
-	//XXX
 	pt[PT_IDX(va)] = ent;
 }
 
@@ -152,8 +86,7 @@ static u64 *paging_getpteref(pt_t pml4, usize va)
 }
 
 /*
- * Problem:
- *	remapping
+ * NOTE: Does not check remapping, could destroy previous mappings.
  */
 static void paging_map(pt_t pml4, usize va, usize pa, isize sz, usize flags)
 {
@@ -174,8 +107,7 @@ static void paging_map(pt_t pml4, usize va, usize pa, isize sz, usize flags)
 	}
 }
 
-// level is in range [1, 2, 3, 4]
-static pt_t pt_deepcopy(pt_t pt, int level)
+static pt_t pt_deepcopy_level(pt_t pt, int level)
 {
 	ASSERT(1 <= level && level <= 4);
 	pt_t newpt = kalloc();
@@ -198,12 +130,20 @@ static pt_t pt_deepcopy(pt_t pt, int level)
 
 		// recursively copy, reset entry addr to new next pt
 		pt_t nextpt = safe_nextpt_noalloc(pt, i);
-		pt_t newnextpt = pt_deepcopy(nextpt, level - 1);
+		pt_t newnextpt = pt_deepcopy_level(nextpt, level - 1);
 		u64 ent = V2P(newnextpt) | PE_FLAGS(pt[i]);
 		safe_setent(newpt, i, ent);
 	}
 
 	return newpt;
+}
+
+/*
+ * Deep copy an address space
+ */
+pt_t pt_root_deepcopy(pt_t pt)
+{
+	return pt_deepcopy_level(pt, 4);
 }
 
 // Switch from bootloader's entrypml4 to kernel's pml4.
@@ -225,15 +165,15 @@ void paginginit_ap(void)
 {
 	ASSERT(kpml4);
 	lcr3(V2P(kpml4));
-	cprintf("paing: ap init\n");
+	cprintf("paging: ap init\n");
 }
 
 // TODO: different page tables for different users
-void uvm_init(void)
+void uvminit(void)
 {
 	ASSERT(kpml4);
 
-	upml4 = pt_deepcopy(kpml4, 4);
+	upml4 = pt_root_deepcopy(kpml4);
 	paging_map(upml4, (usize)ubegin, V2P(ubegin), uend - ubegin,
 		   PF_W | PF_U);
 	cprintf("uvminit: mapped %p ~ %p as PF_U\n", ubegin, uend);

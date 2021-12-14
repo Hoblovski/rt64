@@ -11,12 +11,12 @@ int main(void)
 	lapicinit();
 	trapinit();
 	procinit();
+	uvminit(); // XXX: .
 
-	uvm_init(); // XXX: not here
 	extern void *uhello(void *arg);
 	extern void *minctestmain(void *arg);
 	spawnuser("uhello", uhello, NULL);
-	//spawn("master", minctestmain, NULL);
+	spawn("master", minctestmain, NULL);
 
 	idlemain();
 }

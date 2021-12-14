@@ -44,7 +44,9 @@ void procinit(void)
 	// XXX: better be sprintf
 	curproc->name[5] = '0' + curcpu->index;
 	curproc->name[6] = '\0';
-	// XXX kstack: is it?
+	// kstack field is used for returning from user.
+	// the init idle task does not accept returning from user.
+	// nor does it have dedicated kstacks[*] pages.
 	curproc->kstack = NULL;
 	curproc->pt_root = kpml4;
 

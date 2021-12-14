@@ -5,35 +5,31 @@ KAPPPREFIX = src/kapp
 UAPPPREFIX = src/uapp
 ULIBPREFIX = src/ulib
 TOOLSPREFIX = src/tools
+BOOTPREFIX = src/boot
 INCLUDEPATH = src/include
 
 OUTPREFIX = out
 KOBJPREFIX = $(OUTPREFIX)/kobj
 UOBJPREFIX = $(OUTPREFIX)/uobj
+BOOTOBJPREFIX = $(OUTPREFIX)/boot
 IMGPREFIX = $(OUTPREFIX)
 XV6IMG = $(IMGPREFIX)/xv6.img
-
 KERNELELF = $(OUTPREFIX)/kernel.elf
 
+
+# need to exclude entry
 OBJS := \
-	$(KOBJPREFIX)/main.o\
-	$(KOBJPREFIX)/uart.o\
-	$(KOBJPREFIX)/console.o\
-	$(KOBJPREFIX)/acpi.o\
-	$(KOBJPREFIX)/lapic.o\
-	$(KOBJPREFIX)/string.o\
-	$(KOBJPREFIX)/paging.o\
-	$(KOBJPREFIX)/trap.o\
-	$(KOBJPREFIX)/vectors.o\
-	$(KOBJPREFIX)/trapasm.o\
-	$(KOBJPREFIX)/switch.o\
-	$(KOBJPREFIX)/proc.o\
-	$(KOBJPREFIX)/kernctest.o\
-	$(KOBJPREFIX)/app.o\
-	$(KOBJPREFIX)/minctest.o\
-	$(KOBJPREFIX)/kalloc.o\
-	$(UOBJPREFIX)/syscall.o\
-	$(UOBJPREFIX)/uhello.o\
+	$(patsubst $(KERNPREFIX)/%.c,$(KOBJPREFIX)/%.o,$(wildcard $(KERNPREFIX)/*.c)) \
+	$(patsubst $(KERNPREFIX)/%.S,$(KOBJPREFIX)/%.o,$(wildcard $(KERNPREFIX)/*.S)) \
+	$(patsubst $(KLIBPREFIX)/%.c,$(KOBJPREFIX)/%.o,$(wildcard $(KLIBPREFIX)/*.c)) \
+	$(patsubst $(KAPPPREFIX)/%.c,$(KOBJPREFIX)/%.o,$(wildcard $(KAPPPREFIX)/*.c)) \
+	\
+	$(patsubst $(UAPPPREFIX)/%.c,$(UOBJPREFIX)/%.o,$(wildcard $(UAPPPREFIX)/*.c)) \
+	$(patsubst $(ULIBPREFIX)/%.c,$(UOBJPREFIX)/%.o,$(wildcard $(ULIBPREFIX)/*.c)) \
+	$(patsubst $(ULIBPREFIX)/%.S,$(UOBJPREFIX)/%.o,$(wildcard $(ULIBPREFIX)/*.S)) \
+
+# when linking, entry code must come in the very beginning
+OBJS := $(filter-out $(KOBJPREFIX)/entry64.o,$(OBJS))
 
 CC = gcc
 AS = gas
@@ -54,7 +50,13 @@ LDFLAGS = -m elf_x86_64 -nodefaultlibs
 
 all: $(XV6IMG)
 
+# generate .d files so when re-make headers are considered
 -include $(OBJS:.o=.d)
+
+# preprocessing
+$(OUTPREFIX)/%.i: $(KERNPREFIX)/%.c
+	@mkdir -p $(OUTPREFIX)
+	$(CC) $(CFLAGS) -E -o $@ $<
 
 # kernel object files
 $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.c
@@ -72,10 +74,6 @@ $(KOBJPREFIX)/%.o: $(KAPPPREFIX)/%.c
 $(KOBJPREFIX)/%.o: $(KERNPREFIX)/%.S
 	@mkdir -p $(KOBJPREFIX)
 	$(CC) $(ASFLAGS) -c -o $@ $<
-
-$(KOBJPREFIX)/%.i: $(KERNPREFIX)/%.c
-	@mkdir -p $(KOBJPREFIX)
-	$(CC) $(CFLAGS) -E -o $@ $<
 
 # user object files
 $(UOBJPREFIX)/%.o: $(UAPPPREFIX)/%.c
@@ -96,14 +94,14 @@ $(KERNPREFIX)/vectors.S: $(TOOLSPREFIX)/vectors.py
 	python3 $< > $(KERNPREFIX)/vectors.S
 
 ## bootblock
-$(OUTPREFIX)/bootblock: $(KERNPREFIX)/bootasm.S $(KERNPREFIX)/bootmain.c
-	@mkdir -p $(OUTPREFIX)
-	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -O -o $(OUTPREFIX)/bootmain.o -c $(KERNPREFIX)/bootmain.c
-	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -o $(OUTPREFIX)/bootasm.o -c $(KERNPREFIX)/bootasm.S
-	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 -o $(OUTPREFIX)/bootblock.o $(OUTPREFIX)/bootasm.o $(OUTPREFIX)/bootmain.o
-	$(OBJDUMP) -S $(OUTPREFIX)/bootblock.o > $(OUTPREFIX)/bootblock.asm
-	$(OBJCOPY) -S -O binary -j .text $(OUTPREFIX)/bootblock.o $(OUTPREFIX)/bootblock
-	$(TOOLSPREFIX)/sign.pl $(OUTPREFIX)/bootblock
+$(OUTPREFIX)/bootblock: $(BOOTPREFIX)/bootasm.S $(BOOTPREFIX)/bootmain.c
+	@mkdir -p $(BOOTOBJPREFIX)
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -O -o $(BOOTOBJPREFIX)/bootmain.o -c $(BOOTPREFIX)/bootmain.c
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -o $(BOOTOBJPREFIX)/bootasm.o -c $(BOOTPREFIX)/bootasm.S
+	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 -o $(BOOTOBJPREFIX)/bootblock.o $(BOOTOBJPREFIX)/bootasm.o $(BOOTOBJPREFIX)/bootmain.o
+	$(OBJDUMP) -S $(BOOTOBJPREFIX)/bootblock.o > $(OUTPREFIX)/bootblock.asm
+	$(OBJCOPY) -S -O binary -j .text $(BOOTOBJPREFIX)/bootblock.o $(OUTPREFIX)/bootblock
+	python3 $(TOOLSPREFIX)/sign.py $(OUTPREFIX)/bootblock
 
 # kernel elf
 ENTRYCODE = $(KOBJPREFIX)/entry64.o

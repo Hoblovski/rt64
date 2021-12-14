@@ -1,8 +1,7 @@
 /*
  * Page allocation.
  *
- * Does not require the 2-stage allocator because all physical memory has been
- * mapped by bootloader.
+ * Does not require the 2-stage allocator because I use a reverse init trick.
  */
 
 #include "rt64.h"
@@ -49,7 +48,9 @@ void *kalloc(void)
 void kallocinit(void)
 {
 	void *from = end, *to = P2V((void *)MAX_PHYS_MEM);
-	cprintf("%x %x\n", from, to);
+	// NOTE we do this in the reverse order.
+	// So when we do the first allocations for setting up kpml4,
+	// we do not run into unmapped pages.
 	for (void *it = to - PG_SZ4K; it >= from; it -= PG_SZ4K)
 		kfree(it);
 	cprintf("kalloc: inited %d free pages [%x - %x]\n",

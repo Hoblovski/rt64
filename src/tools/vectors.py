@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Generate vectors.S, the trap/interrupt entry points.
 # There has to be one entry point per interrupt number
