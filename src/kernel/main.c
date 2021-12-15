@@ -13,10 +13,22 @@ int main(void)
 	procinit();
 	uvminit(); // XXX: .
 
+
 	extern void *uhello(void *arg);
+	spawnuser(& (struct newprocdesc) {
+			.name = "uhello",
+			.func = uhello,
+			.initarg = NULL,
+			.prio = 0
+	});
+
 	extern void *minctestmain(void *arg);
-	spawnuser("uhello", uhello, NULL);
-	spawn("master", minctestmain, NULL);
+	spawn(& (struct newprocdesc) {
+			.name = "master",
+			.func = minctestmain,
+			.initarg = NULL,
+			.prio = 0
+	});
 
 	idlemain();
 }

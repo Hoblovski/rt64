@@ -58,6 +58,9 @@ void procinit(void)
 	cprintf("[%d] proc: init\n", curcpu->index);
 }
 
+/*
+ * Meat of the scheduler.
+ */
 struct proc *find_runnable_proc(void)
 {
 	static int i = 0; // round robin
@@ -103,22 +106,34 @@ void idlemain(void)
 	}
 }
 
-struct proc *spawn(const char *name, void *(*func)(void *), void *initarg)
-{
+/*
+ * Allocate a struct proc from procs.
+ *
+ * Initializes fields:
+ *	pid ctx kstack state
+ */
+static struct proc *allocproc(void) {
 	struct proc *p = &procs[nproc++];
-	safestrcpy(p->name, name, 16);
+	p->state = RESERVE;
 	p->pid = nproc;
-
 	memset(&p->ctx, 0, sizeof(struct context));
-	p->ctx.rip = (u64)func;
 	p->kstack = kstacks[p->pid];
+	return p;
+}
+
+struct proc *spawn(struct newprocdesc *desc)
+{
+	ASSERT(MINPRIO <= desc->prio && desc->prio <= MAXPRIO);
+	struct proc *p = allocproc();
+	safestrcpy(p->name, desc->name, 16);
+	p->prio = desc->prio;
 	p->pt_root = kpml4;
 
-	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ;
-	p->ctx.rsp -= XLENB;
+	p->ctx.rip = (u64)desc->func;
+	// Leave room: swtch will store return address here
+	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ - XLENB;
 	p->ctx.rbp = (u64)p->kstack + KSTACK_SZ;
-
-	p->ctx.rdi = (u64)initarg;
+	p->ctx.rdi = (u64)desc->initarg;
 
 	// Set RUNNABLE only when everything has been setup
 	p->state = RUNNABLE;
@@ -126,33 +141,32 @@ struct proc *spawn(const char *name, void *(*func)(void *), void *initarg)
 	return p;
 }
 
-struct proc *spawnuser(const char *name, void *(*func)(void *), void *initarg)
+struct proc *spawnuser(struct newprocdesc *desc)
 {
-	struct proc *p = &procs[nproc++];
-	safestrcpy(p->name, name, 16);
-	p->pid = nproc;
-
-	memset(&p->ctx, 0, sizeof(struct context));
-	p->ctx.rip = (u64)trapret;
-	p->kstack = kstacks[p->pid];
+	ASSERT(MINPRIO <= desc->prio && desc->prio <= MAXPRIO);
+	struct proc *p = allocproc();
+	safestrcpy(p->name, desc->name, 16);
+	p->prio = desc->prio;
 	p->pt_root = upml4;
+
+	p->ctx.rip = (u64)trapret;
 	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ;
 	p->ctx.rbp = (u64)p->kstack + KSTACK_SZ;
 
+	// Leave room for trapret
 	p->ctx.rsp -= sizeof(struct trapframe);
 	p->tf = (void *)p->ctx.rsp;
 	memset(p->tf, 0, sizeof(struct trapframe));
-
-	p->ctx.rsp -= XLENB; // save area for return pointer: used by swtch
-	cprintf("spawnuser: kernel rsp = %p\n", p->ctx.rsp);
+	// Leave room: swtch will store return address here
+	p->ctx.rsp -= XLENB;
 
 	void *ustack = kalloc();
 	p->tf->ss = (SEG_UDATA << 3) | DPL_USER;
 	p->tf->rsp = (usize)ustack + PG_SZ4K - XLENB;
 	p->tf->rflags = FL_IF;
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
-	p->tf->rip = (u64)func;
-	p->tf->rdi = (u64)initarg;
+	p->tf->rip = (u64)desc->func;
+	p->tf->rdi = (u64)desc->initarg;
 
 	// Set RUNNABLE only when everything has been setup
 	p->state = RUNNABLE;

@@ -27,7 +27,12 @@ enum procstate {
 	RUNNABLE,
 	RUNNING,
 	EXITED,
-	SLEEPING
+	SLEEPING,
+	// Reserve this struct proc slot,
+	// When during transitions and this proc should not be messed with,
+	// e.g. initialization.
+	RESERVE
+
 };
 
 struct proc {
@@ -42,6 +47,8 @@ struct proc {
 	//	Ideally every threads will have its own pml4.
 	// For kernel threads, it will be `kpml4`.
 	u64 *pt_root;
+	// Priority. Range 0-255. Higher is more favorable.
+	int prio;
 
 	// Remaining ticks to sleep, only valid if self.state == SLEEPING
 	int sleeprem;
@@ -52,4 +59,12 @@ struct proc {
 
 	// state save area of kernel context switching
 	struct context ctx;
+};
+
+// Bundle arguments to proc creation
+struct newprocdesc {
+	char name[16];
+	void *(*func)(void *);
+	void *initarg;
+	int prio;
 };

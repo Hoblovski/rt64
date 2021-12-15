@@ -89,13 +89,13 @@ void procinit(void);
  * Spawn a kernel thread.
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
  */
-struct proc *spawn(const char *name, void *(*func)(void *), void *initarg);
+struct proc *spawn(struct newprocdesc *desc);
 
 /*
  * Spawn a user thread.
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
  */
-struct proc *spawnuser(const char *name, void *(*func)(void *), void *initarg);
+struct proc *spawnuser(struct newprocdesc *desc);
 
 /*
  * Volutarily give up execution for current thread, but remain runnable.
