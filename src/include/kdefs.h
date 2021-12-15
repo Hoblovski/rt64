@@ -41,6 +41,7 @@ void lapiceoi(void);
  */
 u32 lapictimercnt(void);
 
+void lapicstartap(u8 apicid, u32 addr);
 // ======================================== paging.c
 void paginginit_bsp(void);
 void paginginit_ap(void);

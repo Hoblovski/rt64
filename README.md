@@ -14,9 +14,14 @@ make qemu-nox
 # DOCS
 Exec flow:
 ```
+BSP
 -> bootasm.S -> bootmain.c		[BOOTLOADER]
 -> entry64.S				[BSP init]
 -> main.c:main				[BSP init]
+
+AP
+[waiting for IPI] [start address is from IPI]
+
 ```
 
 Mem upon boot (i.e. entry to main) is set by `mboot_entry` in `entry64.S` and mapped as follows
@@ -77,6 +82,9 @@ reverse allocation
 
 # TODO
 Should we strip dynamic allocation?
+Should we follow the approach in phidias and strip all dynamic shit?
+
+For smp why 0x7000 and 0x8000?
 
 # Thoughts
 The good old 'same code runs in user / kernel' idea?

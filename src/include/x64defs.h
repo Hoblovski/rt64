@@ -116,7 +116,7 @@ static inline i64 xchg64(volatile i64 *addr, i64 newval)
 	i64 result;
 
 	// The + in "+m" denotes a read-modify-write operand.
-	asm volatile("lock; xchgl %0, %1"
+	asm volatile("lock; xchgq %0, %1"
 		     : "+m"(*addr), "=a"(result)
 		     : "1"(newval)
 		     : "cc");

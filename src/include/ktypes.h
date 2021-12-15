@@ -13,6 +13,9 @@ struct percpu {
 	// Local APIC ID
 	u8 lapicid;
 
+	// Whether this CPU is started. Used for booting AP.
+	u64 started;
+
 	// Context of the IDLE kernel thread
 	struct context *idlectx;
 	struct proc *idleproc;

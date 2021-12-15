@@ -93,21 +93,31 @@ $(UOBJPREFIX)/%.o: $(ULIBPREFIX)/%.S
 $(KERNPREFIX)/vectors.S: $(TOOLSPREFIX)/vectors.py
 	python3 $< > $(KERNPREFIX)/vectors.S
 
-## bootblock
+## bootblock: boot code for BSP
 $(OUTPREFIX)/bootblock: $(BOOTPREFIX)/bootasm.S $(BOOTPREFIX)/bootmain.c
 	@mkdir -p $(BOOTOBJPREFIX)
-	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -O -o $(BOOTOBJPREFIX)/bootmain.o -c $(BOOTPREFIX)/bootmain.c
+	# optimize for size here so bootblock fits in 510 bytes
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -Os -o $(BOOTOBJPREFIX)/bootmain.o -c $(BOOTPREFIX)/bootmain.c
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -I$(INCLUDEPATH) -o $(BOOTOBJPREFIX)/bootasm.o -c $(BOOTPREFIX)/bootasm.S
 	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 -o $(BOOTOBJPREFIX)/bootblock.o $(BOOTOBJPREFIX)/bootasm.o $(BOOTOBJPREFIX)/bootmain.o
 	$(OBJDUMP) -S $(BOOTOBJPREFIX)/bootblock.o > $(OUTPREFIX)/bootblock.asm
 	$(OBJCOPY) -S -O binary -j .text $(BOOTOBJPREFIX)/bootblock.o $(OUTPREFIX)/bootblock
 	python3 $(TOOLSPREFIX)/sign.py $(OUTPREFIX)/bootblock
 
+## bootap: boot code for AP
+$(OUTPREFIX)/bootap: $(BOOTPREFIX)/bootap.S
+	@mkdir -p $(BOOTOBJPREFIX)
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I$(INCLUDEPATH) -o $(BOOTOBJPREFIX)/bootap.o -c $<
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o $(BOOTOBJPREFIX)/bootapl.o $(BOOTOBJPREFIX)/bootap.o
+	$(OBJDUMP) -S $(BOOTOBJPREFIX)/bootapl.o > $(OUTPREFIX)/bootap.asm
+	$(OBJCOPY) -S -O binary -j .text $(BOOTOBJPREFIX)/bootapl.o $(OUTPREFIX)/bootap
+
 # kernel elf
 ENTRYCODE = $(KOBJPREFIX)/entry64.o
 LINKSCRIPT = $(KERNPREFIX)/kernel64.ld
-$(KERNELELF): $(OBJS) $(ENTRYCODE) $(LINKSCRIPT)
-	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o $(KERNELELF) $(ENTRYCODE) $(OBJS)
+BINARIES = $(OUTPREFIX)/bootap
+$(KERNELELF): $(OBJS) $(ENTRYCODE) $(LINKSCRIPT) $(OUTPREFIX)/bootap
+	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o $(KERNELELF) $(ENTRYCODE) $(OBJS) -b binary $(BINARIES)
 	$(OBJDUMP) -S $(KERNELELF) > $(OUTPREFIX)/kernel.asm
 	$(OBJDUMP) -t $(KERNELELF) | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(OUTPREFIX)/kernel.sym
 
@@ -133,7 +143,7 @@ addr2line:
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
-CPUS ?= 1
+CPUS ?= 4
 QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 16M -no-reboot $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
