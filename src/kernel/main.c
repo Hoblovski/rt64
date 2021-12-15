@@ -13,20 +13,29 @@ int main(void)
 	procinit();
 	uvminit(); // XXX: .
 
+//
+//	extern void *uhello(void *arg);
+//	spawnuser(& (struct newprocdesc) {
+//			.name = "uhello",
+//			.func = uhello,
+//			.initarg = NULL,
+//			.prio = 0
+//	});
+//
+//	extern void *minctestmain(void *arg);
+//	spawn(& (struct newprocdesc) {
+//			.name = "master",
+//			.func = minctestmain,
+//			.initarg = NULL,
+//			.prio = 0
+//	});
 
-	extern void *uhello(void *arg);
-	spawnuser(& (struct newprocdesc) {
-			.name = "uhello",
-			.func = uhello,
-			.initarg = NULL,
-			.prio = 0
-	});
-
-	extern void *minctestmain(void *arg);
+	extern void *ureadkern(void *arg);
+	int a = 10;
 	spawn(& (struct newprocdesc) {
-			.name = "master",
-			.func = minctestmain,
-			.initarg = NULL,
+			.name = "ureadkern",
+			.func = ureadkern,
+			.initarg = &a,
 			.prio = 0
 	});
 

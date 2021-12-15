@@ -6,7 +6,8 @@
 
 #define MAX_PHYS_MEM 0x1600000 // 16M
 #define MAX_PROC 8
-#define KSTACK_PAGES 2
+#define KSTACK_PAGES 1
+#define USTACK_PAGES 1
 
 // From experience, a period of 1 000 000 000 is equal to 1 second on qemu.
 #define LAPIC_TIMER_PERIOD 10000000 // 10ms
@@ -23,3 +24,4 @@
 
 // Below are computed, do not modify
 #define KSTACK_SZ (PG_SZ4K * KSTACK_PAGES)
+#define USTACK_SZ (PG_SZ4K * USTACK_PAGES)

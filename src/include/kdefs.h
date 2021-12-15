@@ -45,6 +45,10 @@ u32 lapictimercnt(void);
 void paginginit_bsp(void);
 void paginginit_ap(void);
 void uvminit(void);
+/*
+ * Create mapping in the specified address space
+ */
+void paging_map(pt_t pml4, usize va, usize pa, isize sz, usize flags);
 extern pt_t kpml4;
 extern pt_t upml4;
 /*

@@ -91,7 +91,6 @@
 // Page table flags
 #define PF_P 1 // Present
 #define PF_W 2 // Writable
-#define PF_WP 3 // Writable and present
 #define PF_U 4 // User accessible
 #define PF_PWT 8 // Write through
 #define PF_PCD 16 // Cache disable

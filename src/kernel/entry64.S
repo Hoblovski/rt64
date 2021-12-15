@@ -49,19 +49,19 @@ mboot_entry:
   rep stosb
 
 # PML4[0] -> 0x2000 (PDPT-A)
-  mov $(0x2000 | PF_WP), %eax
+  mov $(0x2000 | PF_W | PF_P), %eax
   mov %eax, 0x1000
 
 # PML4[511] -> 0x3000 (PDPT-B)
-  mov $(0x3000 | PF_WP), %eax
+  mov $(0x3000 | PF_W | PF_P), %eax
   mov %eax, 0x1FF8
 
 # PDPT-A[0] -> 0x0 (1G huge page)
-  mov $(0x0 | PF_WP | PF_PS), %eax
+  mov $(0x0 | PF_W | PF_P | PF_PS), %eax
   mov %eax, 0x2000
 
 # PDPT-B[510] -> 0x0 (1G huge page)
-  mov $(0x0 | PF_WP | PF_PS), %eax
+  mov $(0x0 | PF_W | PF_P | PF_PS), %eax
   mov %eax, 0x3FF0
 
 # Clear ebx for initial processor boot.

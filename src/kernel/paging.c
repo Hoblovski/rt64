@@ -26,7 +26,7 @@ static pt_t safe_nextpt_mayalloc(pt_t pt, usize idx)
 		return P2V(pa);
 	}
 	pt_t nextpt = kalloc();
-	safe_setent(pt, idx, V2P(nextpt) | PF_WP | PF_U);
+	safe_setent(pt, idx, V2P(nextpt) | PF_W | PF_P | PF_U);
 	return nextpt;
 }
 
@@ -88,7 +88,7 @@ static u64 *paging_getpteref(pt_t pml4, usize va)
 /*
  * NOTE: Does not check remapping, could destroy previous mappings.
  */
-static void paging_map(pt_t pml4, usize va, usize pa, isize sz, usize flags)
+void paging_map(pt_t pml4, usize va, usize pa, isize sz, usize flags)
 {
 	ASSERT(ALIGNED(va, PG_SZ4K));
 	ASSERT(ALIGNED(pa, PG_SZ4K));
@@ -153,9 +153,9 @@ void paginginit_bsp(void)
 
 	// 0xFFFF_FFFF_8000_0000 ... 0xFFFF_FFFF_FFFF_FFFF (+2G) -> 0x0 (+2G)
 	// 0xFFFF_FFFF_4000_0000 ... (+32M) -> 0xFE00_0000 ... 0xFFFF_FFFF (+32M)
-	paging_map(kpml4, KERNBASE, 0, MAX_PHYS_MEM, PF_W | PF_U);
+	paging_map(kpml4, KERNBASE, 0, MAX_PHYS_MEM, PF_W);
 	paging_map(kpml4, DEVBASE, 0xFE000000, 16 * PG_SZ2M,
-		   PF_PWT | PF_PCD | PF_U);
+		   PF_PWT | PF_PCD);
 
 	lcr3(V2P(kpml4));
 	cprintf("paing: bsp init\n");

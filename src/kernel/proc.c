@@ -3,6 +3,7 @@
 #define KSTACK_SZ (PG_SZ4K * KSTACK_PAGES)
 
 static u8 kstacks[MAX_PROC][KSTACK_SZ] __page_align;
+static u8 ustacks[MAX_PROC][USTACK_SZ] __page_align;
 struct proc procs[MAX_PROC];
 // For now: alloc proc just uses nproc++ -> no deletion of processes
 int nproc;
@@ -113,9 +114,9 @@ void idlemain(void)
  *	pid ctx kstack state
  */
 static struct proc *allocproc(void) {
-	struct proc *p = &procs[nproc++];
+	struct proc *p = &procs[nproc];
 	p->state = RESERVE;
-	p->pid = nproc;
+	p->pid = nproc++;
 	memset(&p->ctx, 0, sizeof(struct context));
 	p->kstack = kstacks[p->pid];
 	return p;
@@ -160,7 +161,8 @@ struct proc *spawnuser(struct newprocdesc *desc)
 	// Leave room: swtch will store return address here
 	p->ctx.rsp -= XLENB;
 
-	void *ustack = kalloc();
+	void *ustack = ustacks[p->pid];
+	paging_map(p->pt_root, (usize)ustack, V2P(ustack), USTACK_SZ, PF_U | PF_W);
 	p->tf->ss = (SEG_UDATA << 3) | DPL_USER;
 	p->tf->rsp = (usize)ustack + PG_SZ4K - XLENB;
 	p->tf->rflags = FL_IF;
@@ -195,3 +197,4 @@ void sleep(int nticks)
 	curproc->sleeprem = nticks;
 	sched();
 }
+

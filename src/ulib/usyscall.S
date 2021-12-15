@@ -7,6 +7,7 @@ usys ## name:                                                                  \
   int $T_SYSCALL ;                                                             \
   ret
 
+.section .user.text
 SYSCALL(print)
 SYSCALL(exit)
 

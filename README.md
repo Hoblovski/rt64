@@ -6,6 +6,8 @@ Requirements
 
 Just
 ```bash
+make src/kernel/vectors.S
+
 make qemu-nox
 ```
 
