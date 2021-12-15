@@ -126,7 +126,14 @@ void trap(struct trapframe *tf)
 				  tf->r8, tf->r9);
 		break;
 	default:
-		panic("unexpected trap %d from cpu %d rip %p (cr2=0x%x)\n",
-		      tf->trapno, curcpu->index, tf->rip, rcr2());
+		if (curproc == 0 || (tf->cs & 3) == 0) {
+			// proc uninit or from kernel: just panic.
+			panic("trap: curproc=%s trapno=%d cpu=%d rip=%p cr2=%x panicked\n",
+			      curproc->name, tf->trapno, curcpu->index, tf->rip, rcr2());
+		}
+		cprintf("trap: curproc=%s trapno=%d cpu=%d rip=%p cr2=%x killed\n",
+				curproc->name, tf->trapno, curcpu->index, tf->rip, rcr2());
+		// TODO: some sort of exitcause variant struct
+		exit((void*) 0xDEADDEADDEADDEAD);
 	}
 }
