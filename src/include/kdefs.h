@@ -141,3 +141,6 @@ int nfreepages(void);
  * But rt64 kernel should never call it.
  */
 extern char spawnuserret[];
+
+// ======================================== cga.c
+void cgaputc(int c);

@@ -139,7 +139,7 @@ struct proc *spawn(struct newprocdesc *desc)
 
 	// Leave room: when desc->func returns, automatically calls exit
 	p->ctx.rsp -= XLENB;
-	*(usize *)p->ctx.rsp = spawnret;
+	*(usize *)p->ctx.rsp = (usize)spawnret;
 	// Leave room: swtch will store return address here
 	p->ctx.rsp -= XLENB;
 
@@ -178,7 +178,7 @@ struct proc *spawnuser(struct newprocdesc *desc)
 	p->tf->rsp = (usize)ustack + PG_SZ4K;
 	// Leave room: when user function returns, automatically calls usysexit
 	p->tf->rsp -= XLENB;
-	*(usize *)p->tf->rsp = spawnuserret;
+	*(usize *)p->tf->rsp = (usize)spawnuserret;
 	p->tf->rflags = FL_IF;
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
 	p->tf->rip = (u64)desc->func;

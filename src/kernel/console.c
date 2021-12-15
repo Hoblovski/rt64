@@ -62,6 +62,7 @@ static void consputc(int c)
 		uartputc('\b');
 	} else
 		uartputc(c);
+	cgaputc(c);
 }
 
 static int isdigit(char x)
