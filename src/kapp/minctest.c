@@ -58,12 +58,10 @@ void measure_sleep_tsc(void)
 
 int minctestmain()
 {
-	struct proc* p = spawn(& (struct newprocdesc) {
-			.name = "timer",
-			.func = timerthread,
-			.initarg = NULL,
-			.prio = 0
-	});
+	struct proc *p = spawn(&(struct newprocdesc){ .name = "timer",
+						      .func = timerthread,
+						      .initarg = NULL,
+						      .prio = 0 });
 	ASSERT(p != NULL);
 
 	while (cycles == 0)

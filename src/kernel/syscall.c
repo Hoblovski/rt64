@@ -7,7 +7,7 @@ isize syscall(isize num, usize a0, usize a1, usize a2, usize a3, usize a4,
 	case SYS_print:
 		return sys_print((const char *)a0);
 	case SYS_exit:
-		sys_exit();
+		sys_exit((void *)a0);
 	default:
 		return -1;
 	}
@@ -19,7 +19,7 @@ isize sys_print(const char *a0)
 	return 0;
 }
 
-isize sys_exit(void)
+isize sys_exit(void *retval)
 {
-	exit();
+	exit(retval);
 }

@@ -58,6 +58,7 @@ pt_t pt_root_deepcopy(pt_t pt);
 
 // ======================================== trapasm.S
 void trapret(void);
+void spawnret(void) __attribute__((noreturn));
 
 // ======================================== trap.c
 void trapinit();
@@ -74,7 +75,7 @@ extern int ticks;
 isize syscall(isize num, usize a0, usize a1, usize a2, usize a3, usize a4,
 	      usize a5);
 isize sys_print(const char *a0);
-isize sys_exit(void) __attribute__((noreturn));
+isize sys_exit(void *retval) __attribute__((noreturn));
 
 // ======================================== switch.S
 /*
@@ -109,7 +110,7 @@ void yield(void);
 /*
  * Terminate execution of current thread.
  */
-void exit(void) __attribute__((noreturn));
+void exit(void *retval) __attribute__((noreturn));
 
 /*
  * Sleep until the specified number of ticks has elapsed
@@ -133,3 +134,10 @@ void kfree(void *frame);
 void kallocinit(void);
 
 int nfreepages(void);
+
+// ======================================== utrapasm.S
+/*
+ * spawnuserret is actually a function in user mode.
+ * But rt64 kernel should never call it.
+ */
+extern char spawnuserret[];

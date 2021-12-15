@@ -87,12 +87,8 @@ struct thread_t {
 
 static inline void spawnthr(thread_t *thr, void *(*func)(void *), void *arg)
 {
-	thr->v = spawn(& (struct newprocdesc) {
-			.name = "timer",
-			.func = func,
-			.initarg = arg,
-			.prio = 0
-	});
+	thr->v = spawn(&(struct newprocdesc){
+		.name = "timer", .func = func, .initarg = arg, .prio = 0 });
 }
 
 // unimplemented for kernel

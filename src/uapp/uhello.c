@@ -11,11 +11,11 @@ __attribute__((section(".user.text"))) void *uhello(void *_arg)
 	usysprint(msg);
 	msg += 5;
 	usysprint(msg);
-	usysexit();
+	return (void *)0xDEADBEEF;
 }
 
 __attribute__((section(".user.text"))) void *ureadkern(void *addr)
 {
-	*(volatile int*) addr;
+	*(volatile int *)addr;
 	return NULL;
 }

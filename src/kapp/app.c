@@ -7,7 +7,7 @@ __attribute__((unused)) void *kthread1(void *arg)
 		cprintf("  kthread1: got me %d\n", (u64)arg);
 		yield();
 	}
-	exit();
+	exit(0);
 }
 
 __attribute__((unused)) void *kthread2(void *arg)
@@ -18,7 +18,7 @@ __attribute__((unused)) void *kthread2(void *arg)
 		for (volatile int i = 0; i < 100000000; i++)
 			;
 	}
-	exit();
+	exit(0);
 }
 
 __attribute__((unused)) void *kthread3(void *arg)
@@ -32,5 +32,5 @@ __attribute__((unused)) void *kthread3(void *arg)
 			ticks, tsc - test_tsc);
 		sleep(10);
 	}
-	exit();
+	exit(0);
 }

@@ -154,8 +154,7 @@ void paginginit_bsp(void)
 	// 0xFFFF_FFFF_8000_0000 ... 0xFFFF_FFFF_FFFF_FFFF (+2G) -> 0x0 (+2G)
 	// 0xFFFF_FFFF_4000_0000 ... (+32M) -> 0xFE00_0000 ... 0xFFFF_FFFF (+32M)
 	paging_map(kpml4, KERNBASE, 0, MAX_PHYS_MEM, PF_W);
-	paging_map(kpml4, DEVBASE, 0xFE000000, 16 * PG_SZ2M,
-		   PF_PWT | PF_PCD);
+	paging_map(kpml4, DEVBASE, 0xFE000000, 16 * PG_SZ2M, PF_PWT | PF_PCD);
 
 	lcr3(V2P(kpml4));
 	cprintf("paing: bsp init\n");

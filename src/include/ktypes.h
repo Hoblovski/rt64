@@ -38,17 +38,24 @@ enum procstate {
 struct proc {
 	enum procstate state;
 	char name[16];
+
 	// INVARIANT: forall i, proc[i].pid == i
 	volatile int pid;
+
 	// lowest byte of kernel stack
 	void *kstack;
+
 	// PML4.
 	// For user threads, it will be `upml4`.
 	//	Ideally every threads will have its own pml4.
 	// For kernel threads, it will be `kpml4`.
 	u64 *pt_root;
+
 	// Priority. Range 0-255. Higher is more favorable.
 	int prio;
+
+	// Return value, only meaningful if state is EXITED
+	void *retval;
 
 	// Remaining ticks to sleep, only valid if self.state == SLEEPING
 	int sleeprem;

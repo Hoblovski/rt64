@@ -42,3 +42,9 @@ trapret:
   # discard trapnum and errorcode
   add $16, %rsp
   iretq
+
+.globl spawnret
+spawnret:
+  mov %rax, %rdi
+  # do not call, since we wont return and have no stack space left
+  jmp exit

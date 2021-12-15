@@ -3,7 +3,7 @@
 #define SYSCALL(name)                                                          \
 .globl usys ## name ;                                                          \
 usys ## name:                                                                  \
-  movl $SYS_ ## name, %eax ;                                                   \
+  movq $SYS_ ## name, %rax ;                                                   \
   int $T_SYSCALL ;                                                             \
   ret
 

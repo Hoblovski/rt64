@@ -113,7 +113,8 @@ void idlemain(void)
  * Initializes fields:
  *	pid ctx kstack state
  */
-static struct proc *allocproc(void) {
+static struct proc *allocproc(void)
+{
 	struct proc *p = &procs[nproc];
 	p->state = RESERVE;
 	p->pid = nproc++;
@@ -125,19 +126,27 @@ static struct proc *allocproc(void) {
 struct proc *spawn(struct newprocdesc *desc)
 {
 	ASSERT(MINPRIO <= desc->prio && desc->prio <= MAXPRIO);
+
 	struct proc *p = allocproc();
 	safestrcpy(p->name, desc->name, 16);
 	p->prio = desc->prio;
 	p->pt_root = kpml4;
 
 	p->ctx.rip = (u64)desc->func;
-	// Leave room: swtch will store return address here
-	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ - XLENB;
+	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ;
 	p->ctx.rbp = (u64)p->kstack + KSTACK_SZ;
 	p->ctx.rdi = (u64)desc->initarg;
 
+	// Leave room: when desc->func returns, automatically calls exit
+	p->ctx.rsp -= XLENB;
+	*(usize *)p->ctx.rsp = spawnret;
+	// Leave room: swtch will store return address here
+	p->ctx.rsp -= XLENB;
+
 	// Set RUNNABLE only when everything has been setup
 	p->state = RUNNABLE;
+
+	// OPT: kfree this pid's ustack
 
 	return p;
 }
@@ -145,6 +154,7 @@ struct proc *spawn(struct newprocdesc *desc)
 struct proc *spawnuser(struct newprocdesc *desc)
 {
 	ASSERT(MINPRIO <= desc->prio && desc->prio <= MAXPRIO);
+
 	struct proc *p = allocproc();
 	safestrcpy(p->name, desc->name, 16);
 	p->prio = desc->prio;
@@ -154,7 +164,7 @@ struct proc *spawnuser(struct newprocdesc *desc)
 	p->ctx.rsp = (u64)p->kstack + KSTACK_SZ;
 	p->ctx.rbp = (u64)p->kstack + KSTACK_SZ;
 
-	// Leave room for trapret
+	// Leave room: trapret restores initial registers from this trapframe
 	p->ctx.rsp -= sizeof(struct trapframe);
 	p->tf = (void *)p->ctx.rsp;
 	memset(p->tf, 0, sizeof(struct trapframe));
@@ -162,9 +172,13 @@ struct proc *spawnuser(struct newprocdesc *desc)
 	p->ctx.rsp -= XLENB;
 
 	void *ustack = ustacks[p->pid];
-	paging_map(p->pt_root, (usize)ustack, V2P(ustack), USTACK_SZ, PF_U | PF_W);
+	paging_map(p->pt_root, (usize)ustack, V2P(ustack), USTACK_SZ,
+		   PF_U | PF_W);
 	p->tf->ss = (SEG_UDATA << 3) | DPL_USER;
-	p->tf->rsp = (usize)ustack + PG_SZ4K - XLENB;
+	p->tf->rsp = (usize)ustack + PG_SZ4K;
+	// Leave room: when user function returns, automatically calls usysexit
+	p->tf->rsp -= XLENB;
+	*(usize *)p->tf->rsp = spawnuserret;
 	p->tf->rflags = FL_IF;
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
 	p->tf->rip = (u64)desc->func;
@@ -176,11 +190,13 @@ struct proc *spawnuser(struct newprocdesc *desc)
 	return p;
 }
 
-void exit(void)
+void exit(void *retval)
 {
 	ASSERT(curproc->state == RUNNING);
 	cli();
 	curproc->state = EXITED;
+	curproc->retval = retval;
+	cprintf("proc: exited %s, retval=%p\n", curproc->name, retval);
 	sched();
 	panic("proc: exit unreachable");
 }
@@ -197,4 +213,3 @@ void sleep(int nticks)
 	curproc->sleeprem = nticks;
 	sched();
 }
-

@@ -8,4 +8,8 @@
 #define NULL ((void *)0)
 
 int usysprint(const char *p);
-void usysexit(void) __attribute__((noreturn));
+/*
+ * Return generic void* than a int.
+ * Users can just use `usysexit((void*) 3)`, as long as they do not dereference the retval.
+ */
+void usysexit(void *retval) __attribute__((noreturn));
