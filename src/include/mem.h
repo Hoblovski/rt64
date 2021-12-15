@@ -22,4 +22,4 @@
 // Align pointer a down. pgsize must be power of 2
 #define ALIGN(a, pgsize) ((void *)(((u64)(a)) & (~((pgsize)-1))))
 
-#define ATTR_PAGEALIGN __attribute__((__aligned__(PG_SZ4K)));
+#define __page_align __attribute__((__aligned__(PG_SZ4K)));

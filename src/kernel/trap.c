@@ -4,7 +4,7 @@ __thread struct percpu *curcpu;
 
 // x64 IDT has 256 entries, each of 16B (sdm3 fig 6-8)
 // XXX: make more reasonable
-static u32 idt[PG_SZ4K / 4] ATTR_PAGEALIGN;
+static u32 idt[PG_SZ4K / 4] __page_align;
 
 static void mkgate(u32 n, void *kva, u32 pl, u32 trap)
 {
@@ -30,7 +30,7 @@ void set_task_kstack(void)
 }
 
 // TLS holds GDT and TSS and __thread data. One page for each cpu.
-static u8 tls[MAX_CPU][PG_SZ4K] ATTR_PAGEALIGN;
+static u8 tls[MAX_CPU][PG_SZ4K] __page_align;
 
 __thread struct cpu *cpu;
 

@@ -152,4 +152,3 @@ struct segdesc {
 	u32 g : 1; // Granularity: limit scaled by 4K when set
 	u32 base_31_24 : 8; // High bits of segment base address
 };
-

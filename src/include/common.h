@@ -1,5 +1,7 @@
 /*
- * Project independent header implementations
+ * Project independent header implementations.
+ *
+ * Basically augments compiler.
  */
 #pragma once
 
@@ -13,4 +15,3 @@
 			panic("assert: %s:%d (%s)\n", __FILE__, __LINE__, #x); \
 		}                                                              \
 	} while (0)
-

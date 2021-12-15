@@ -111,9 +111,9 @@ static inline void hlt(void)
 	asm volatile("hlt");
 }
 
-static inline u32 xchg(volatile u32 *addr, usize newval)
+static inline i64 xchg64(volatile i64 *addr, i64 newval)
 {
-	u32 result;
+	i64 result;
 
 	// The + in "+m" denotes a read-modify-write operand.
 	asm volatile("lock; xchgl %0, %1"

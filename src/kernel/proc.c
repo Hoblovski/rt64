@@ -2,7 +2,7 @@
 
 #define KSTACK_SZ (PG_SZ4K * KSTACK_PAGES)
 
-static u8 kstacks[MAX_PROC][KSTACK_SZ] ATTR_PAGEALIGN;
+static u8 kstacks[MAX_PROC][KSTACK_SZ] __page_align;
 struct proc procs[MAX_PROC];
 // For now: alloc proc just uses nproc++ -> no deletion of processes
 int nproc;
