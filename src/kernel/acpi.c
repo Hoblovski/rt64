@@ -1,3 +1,7 @@
+/* Used to detect IOAPIC and LAPIC.
+ * This could be skipped with `CONFIG_DUMMY_ACPI`
+ */
+
 /* acpi.c
  *
  * Copyright (c) 2013 Brian Swetland
@@ -183,6 +187,17 @@ static void acpi_config_smp(struct acpi_madt *madt)
 		panic("acpi: cannot detect lapic");
 }
 
+#ifdef CONFIG_DUMMY_ACPI
+void acpiinit(void)
+{
+	for (int i = 0; i < CONFIG_DUMMY_ACPI_NCPUS; i++) {
+		cpus[ncpu].index = ncpu;
+		cpus[ncpu].lapicid = ncpu;
+		ncpu++;
+	}
+}
+
+#else
 void acpiinit(void)
 {
 	unsigned n, count;
@@ -222,6 +237,7 @@ notmapped:
 	cprintf("acpi: too much physical memory\n");
 	panic("acpi: tables not mapped");
 }
+#endif
 
 struct percpu cpus[MAX_CPU];
 int ncpu;

@@ -4,7 +4,7 @@
 #define XLENB 8
 #define MAX_CPU 8
 
-#define MAX_PHYS_MEM 0x1600000 // 16M
+#define MAX_PHYS_MEM 0x1000000 // 16M
 #define MAX_PROC 8
 #define KSTACK_PAGES 1
 #define USTACK_PAGES 1

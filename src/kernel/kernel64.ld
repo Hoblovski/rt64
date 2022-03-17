@@ -26,9 +26,7 @@ SECTIONS
 	}
 
 	. = ALIGN(0x1000);
-
 	PROVIDE(ubegin = .);
-	. = ALIGN(0x1000);
 	.user : {
 		*(.user.text)
 		*(.user.rodata)
@@ -61,8 +59,6 @@ SECTIONS
 		*(.bss)
 		*(COMMON)
 	}
-
-	. = ALIGN(0x1000);
 
 	PROVIDE(end = .);
 

@@ -15,3 +15,10 @@
  * Pool for ready thread rather than WFI when idle.
  */
 #undef CONFIG_IDLE_POOL
+
+/*
+ * Skip all ACPI checks and manually specify ACPI info.
+ * This is used for booting on T440.
+ */
+#define CONFIG_DUMMY_ACPI
+#define CONFIG_DUMMY_ACPI_NCPUS 1

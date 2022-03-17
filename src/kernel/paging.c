@@ -157,7 +157,7 @@ void paginginit_bsp(void)
 	paging_map(kpml4, DEVBASE, 0xFE000000, 16 * PG_SZ2M, PF_PWT | PF_PCD);
 
 	lcr3(V2P(kpml4));
-	cprintf("paing: bsp init\n");
+	cprintf("paging: bsp init\n");
 }
 
 void paginginit_ap(void)

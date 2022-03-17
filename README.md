@@ -71,6 +71,10 @@ src
 	apps run in user mode, invokes syscalls for services.
 		#include "rt64u.h"
 
+├── boot
+	bsp booting on qemu (bsp booting on baremetal is done by grub)
+	ap boot code
+
 └── ulib
 	libraries for user code.
 ```
@@ -85,6 +89,8 @@ Should we strip dynamic allocation?
 Should we follow the approach in phidias and strip all dynamic shit?
 
 For smp why 0x7000 and 0x8000?
+
+Support big memory (the offset-based paging currently does not support >= 4G memory)
 
 # Thoughts
 The good old 'same code runs in user / kernel' idea?

@@ -96,12 +96,18 @@ void procinit(void);
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
  */
 struct proc *spawn(struct newprocdesc *desc);
+#define SPAWN_K(n, f, ia, p)                                                   \
+	spawn(&(struct newprocdesc){                                           \
+		.name = (n), .func = (f), .initarg = (ia), .prio = (p) });
 
 /*
  * Spawn a user thread.
  * NOTE: Either the function should always end by an `exit`, or it should be __attribute__((noreturn)) i.e. loop.
  */
 struct proc *spawnuser(struct newprocdesc *desc);
+#define SPAWN_U(n, f, ia, p)                                                   \
+	spawnuser(&(struct newprocdesc){                                       \
+		.name = (n), .func = (f), .initarg = (ia), .prio = (p) });
 
 /*
  * Volutarily give up execution for current thread, but remain runnable.

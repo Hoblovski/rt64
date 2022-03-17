@@ -143,7 +143,7 @@ addr2line:
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = -gdb tcp::$(GDBPORT)
-CPUS ?= 4
+CPUS ?= 1
 QEMUOPTS = -net none -drive format=raw,file=$(XV6IMG) -smp $(CPUS) -m 16M -no-reboot $(QEMUEXTRA)
 
 qemu: $(XV6IMG)
